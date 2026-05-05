@@ -2,6 +2,8 @@ import { Command } from '@sapphire/framework';
 import { emojis } from '#utils/emoji.js';
 import { MessageFlags, PermissionsBitField } from 'discord.js';
 
+const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
+
 export class PurgeCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, { ...options });
@@ -71,11 +73,33 @@ export class PurgeCommand extends Command {
         const fetched = await channel.messages.fetch({ limit: fetchLimit as number });
         if (!fetched.size) break;
 
-        const deleted = await channel.bulkDelete(fetched, true);
-        if (!deleted.size) break;
+        const now = Date.now();
+        const recentMessages = fetched.filter((message) => now - message.createdTimestamp < FOURTEEN_DAYS);
+        const oldMessages = fetched.filter((message) => now - message.createdTimestamp >= FOURTEEN_DAYS);
 
-        deletedTotal += deleted.size;
-        remaining -= deleted.size;
+        if (recentMessages.size) {
+          const deleted = await channel.bulkDelete(recentMessages, true);
+          deletedTotal += deleted.size;
+          remaining -= deleted.size;
+        }
+
+        if (oldMessages.size && remaining > 0) {
+          const messagesToDelete = oldMessages.first(Math.min(oldMessages.size, remaining));
+
+          for (const message of messagesToDelete) {
+            try {
+              await channel.messages.delete(message.id);
+              deletedTotal += 1;
+              remaining -= 1;
+            } catch (err) {
+              console.error('Failed to delete old message', err);
+            }
+
+            if (remaining <= 0) break;
+          }
+        }
+
+        if (recentMessages.size === 0 && oldMessages.size === 0) break;
       }
 
       await interaction.editReply(`${emojis.rightArrow1} Successfully purged ${deletedTotal} messages.`);
