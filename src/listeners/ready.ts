@@ -19,7 +19,7 @@ export class ReadyListener extends Listener<typeof Events.ClientReady> {
     console.log(`Ready! Logged in as ${client.user.tag}`);
 
     client.user.setActivity({
-      name: `/autorole | Shard ${client.shard?.ids?.[0] ?? 0}`,
+      name: `Channel Logging! | Shard ${client.shard?.ids?.[0] ?? 0}`,
       type: ActivityType.Custom
     });
 

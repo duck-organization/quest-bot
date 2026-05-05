@@ -1,14 +1,17 @@
 import { Command } from '@sapphire/framework';
 import {
   ActionRowBuilder,
+  Colors,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
   GuildMember,
   MessageFlags,
   PermissionsBitField
 } from 'discord.js';
 import ms, { type StringValue } from 'ms';
 import { createWarn } from '#lib/warns.js';
+import { logEmbed, truncate } from '#lib/logging.js';
 import { emojis } from '#utils/emoji.js';
 
 export class WarnCommand extends Command {
@@ -141,6 +144,26 @@ export class WarnCommand extends Command {
               }`
             )
             .catch(() => {});
+
+          const embed = new EmbedBuilder()
+            .setTitle('Member Warned')
+            .setColor(Colors.Orange)
+            .addFields(
+              { name: 'Member', value: `<@${targetMember.id}>`, inline: true },
+              { name: 'Moderator', value: `<@${interaction.user.id}>`, inline: true },
+              { name: 'Reason', value: truncate(reason) || '-', inline: false }
+            )
+            .setTimestamp();
+
+          if (expiresAt) {
+            embed.addFields({
+              name: 'Expires',
+              value: `<t:${Math.floor(expiresAt.getTime() / 1000)}:R>`,
+              inline: true
+            });
+          }
+
+          await logEmbed(interaction.guild, embed);
           await confirmation.update({
             content: `${emojis.rightArrow2} <@${targetMember.id}> has been warned with reason: ${reason}`,
             components: []

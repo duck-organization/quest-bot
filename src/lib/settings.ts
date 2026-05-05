@@ -6,6 +6,8 @@ export type ServerSettings = {
     welcomeChannelId: string | null;
     ticketCategoryId: string | null;
     staffRole: string | null;
+    loggingEnabled?: boolean;
+    loggingChannelId?: string | null;
 };
 
 export const DefaultSettings: ServerSettings = {
@@ -13,6 +15,8 @@ export const DefaultSettings: ServerSettings = {
     welcomeChannelId: null,
     ticketCategoryId: null,
     staffRole: null,
+    loggingEnabled: false,
+    loggingChannelId: null,
 };
 
 export async function getSettings(guildId: string, guildName: string): Promise<ServerSettings> {

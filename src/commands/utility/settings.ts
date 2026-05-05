@@ -108,6 +108,43 @@ function buildTicketPanel(settings: ServerSettings, guild: Guild, status?: strin
   };
 }
 
+function buildLoggingPanel(settings: ServerSettings, guild: Guild, status?: string) {
+  const currentChannelName = settings.loggingChannelId
+    ? guild.channels.cache.get(settings.loggingChannelId)?.name
+    : null;
+
+  const toggleMenu = new StringSelectMenuBuilder()
+    .setCustomId('loggingToggle')
+    .setPlaceholder(`${settings.loggingEnabled ? 'Enabled' : 'Disabled'}`)
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel('Enable')
+        .setDescription('Log all server events.')
+        .setValue('enable'),
+      new StringSelectMenuOptionBuilder()
+        .setLabel('Disable')
+        .setDescription("Don't log any server events.")
+        .setValue('disable')
+    );
+
+  const channelMenu = new ChannelSelectMenuBuilder()
+    .setCustomId('loggingChannel')
+    .setPlaceholder(
+      currentChannelName ? `#${currentChannelName}` : 'Select a channel for logging messages'
+    )
+    .setChannelTypes(ChannelType.GuildText);
+
+  return {
+    content: status
+      ? `${emojis.rightArrow1} **Logging** module:\n${emojis.rightArrow2} ${status}`
+      : `${emojis.rightArrow1} **Logging** module:`,
+    components: [
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
+      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu)
+    ]
+  };
+}
+
 async function normalizeTicketSettings(guildId: string, guild: Guild, settings: ServerSettings) {
   if (!settings.ticketCategoryId) return settings;
 
@@ -158,7 +195,11 @@ export class SettingsCommand extends Command {
         new StringSelectMenuOptionBuilder()
           .setLabel('Tickets')
           .setDescription('Configure where tickets are created.')
-          .setValue('tickets')
+          .setValue('tickets'),
+        new StringSelectMenuOptionBuilder()
+          .setLabel('Logging')
+          .setDescription('Configure server channel logging.')
+          .setValue('logging')
       );
 
     const response = await interaction.reply({
@@ -198,6 +239,8 @@ export class SettingsCommand extends Command {
         await settingChoice.update(buildWelcomePanel(settings, guild));
       } else if (settingChoice.values[0] === 'tickets') {
         await settingChoice.update(buildTicketPanel(settings, guild));
+      } else if (settingChoice.values[0] === 'logging') {
+        await settingChoice.update(buildLoggingPanel(settings, guild));
       } else {
         return;
       }
@@ -238,6 +281,18 @@ export class SettingsCommand extends Command {
           const next = await updateSettings(guildId, guild.name, { staffRole: null });
 
           await i.update(buildTicketPanel(next, guild, 'Ticket staff role removed.'));
+        } else if (i.customId === 'loggingToggle' && i.isStringSelectMenu()) {
+          const enable = i.values[0] === 'enable';
+          const next = await updateSettings(guildId, guild.name, { loggingEnabled: enable });
+
+          await i.update(
+            buildLoggingPanel(next, guild, `Logging module **${enable ? 'enabled' : 'disabled'}**.`)
+          );
+        } else if (i.customId === 'loggingChannel' && i.isChannelSelectMenu()) {
+          const channelId = i.values[0];
+          const next = await updateSettings(guildId, guild.name, { loggingChannelId: channelId });
+
+          await i.update(buildLoggingPanel(next, guild, `Logging channel set to <#${channelId}>.`));
         }
       });
 
