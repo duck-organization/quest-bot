@@ -63,6 +63,7 @@ export class PurgeCommand extends Command {
     }
 
     await interaction.deferReply({ ephemeral: true });
+    await interaction.editReply(`${emojis.rightArrow2} Purging ${amount} messages...`);
 
     let remaining = amount;
     let deletedTotal = 0;
@@ -98,6 +99,10 @@ export class PurgeCommand extends Command {
             if (remaining <= 0) break;
           }
         }
+
+        await interaction.editReply(
+          `${emojis.rightArrow2} Purging messages... deleted ${deletedTotal}/${amount}`
+        );
 
         if (recentMessages.size === 0 && oldMessages.size === 0) break;
       }
