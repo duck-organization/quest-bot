@@ -1,0 +1,38 @@
+import { Listener } from '@sapphire/framework';
+import { AuditLogEvent, Colors, EmbedBuilder, Events, type GuildMember } from 'discord.js';
+import { getRecentAuditLogEntry, logEmbed } from '#lib/logging.js';
+
+export class GuildMemberRemoveListener extends Listener<typeof Events.GuildMemberRemove> {
+  public constructor(context: Listener.LoaderContext, options: Listener.Options) {
+    super(context, {
+      ...options,
+      event: Events.GuildMemberRemove
+    });
+  }
+
+  public async run(member: GuildMember) {
+    const banEntry = await getRecentAuditLogEntry(member.guild, AuditLogEvent.MemberBanAdd, member.id);
+    if (banEntry) return;
+
+    const kickEntry = await getRecentAuditLogEntry(member.guild, AuditLogEvent.MemberKick, member.id);
+
+    const embed = new EmbedBuilder()
+      .setTitle(kickEntry ? 'Member Kicked' : 'Member Left')
+      .setColor(kickEntry ? Colors.Red : Colors.Grey)
+      .addFields(
+        { name: 'Member', value: `${member.user.tag} (${member.id})`, inline: false },
+        { name: 'Username', value: member.user.toString(), inline: true }
+      )
+      .setTimestamp();
+
+    if (kickEntry?.executor) {
+      embed.addFields({ name: 'Moderator', value: `${kickEntry.executor.tag}`, inline: true });
+    }
+
+    if (kickEntry?.reason) {
+      embed.addFields({ name: 'Reason', value: kickEntry.reason, inline: false });
+    }
+
+    await logEmbed(member.guild, embed);
+  }
+}
