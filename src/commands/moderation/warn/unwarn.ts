@@ -82,10 +82,17 @@ export class UnwarnCommand extends Command {
     const collectorFilter = (i: { user: { id: string } }) => i.user.id === interaction.user.id;
 
     try {
-      const confirmation = await response.resource!.message!.awaitMessageComponent({
-        filter: collectorFilter,
-        time: 60_000
-      });
+      const confirmation = await import('#utils/collectors.js').then((m) =>
+        m.awaitMessageComponentSafe(response.resource!.message!, { filter: collectorFilter, time: 60_000 })
+      );
+
+      if (!confirmation) {
+        await interaction.editReply({
+          content: `${emojis.rightArrow2} No response within a minute or errored.`,
+          components: []
+        });
+        return;
+      }
 
       if (confirmation.customId === 'confirm') {
         try {
