@@ -20,8 +20,7 @@ export class ReadyListener extends Listener<typeof Events.ClientReady> {
 
     client.user.setActivity({
       name: `/autorole | Shard ${client.shard?.ids?.[0] ?? 0}`,
-      type: ActivityType.Listening,
-      state: 'New Feature'
+      type: ActivityType.Custom
     });
 
     heartbeat(client);
