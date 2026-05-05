@@ -1,0 +1,87 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": [
+    "DATABASE_URL"
+  ],
+  "globalDependencies": [
+    ".env"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ],
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:migrate:dev": {
+      "inputs": [
+        ".env"
+      ],
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:migrate:deploy": {
+      "inputs": [
+        ".env"
+      ],
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:push": {
+      "inputs": [
+        ".env"
+      ],
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:seed": {
+      "inputs": [
+        ".env"
+      ],
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "dev": {
+      "inputs": [
+        ".env"
+      ],
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "generate": {
+      "inputs": [
+        ".env"
+      ],
+      "dependsOn": [
+        "^generate"
+      ],
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+  }
+}

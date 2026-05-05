@@ -1,4 +1,4 @@
-import { Prisma } from "#prisma/client.js";
+import type { Prisma } from "@questbot/database";
 import { prisma } from "./prisma.js";
 
 export type ServerSettings = {
