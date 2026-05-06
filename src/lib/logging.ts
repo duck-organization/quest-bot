@@ -15,6 +15,17 @@ export async function logEmbed(guild: Guild, embed: EmbedBuilder) {
   await channel.send({ embeds: [embed] }).catch((err) => console.error(err));
 }
 
+export async function isLoggingChannel(guild: Guild, channelId: string | null | undefined) {
+  if (!channelId) return false;
+
+  const settings = await getSettings(guild.id, guild.name).catch((err) => {
+    console.error(err);
+    return null;
+  });
+
+  return settings?.loggingEnabled && settings.loggingChannelId === channelId;
+}
+
 export async function getRecentAuditLogEntry(guild: Guild, type: AuditLogEvent, targetId: string) {
   const auditLogs = await guild.fetchAuditLogs({ type, limit: 5 }).catch((err) => {
     console.error(err);

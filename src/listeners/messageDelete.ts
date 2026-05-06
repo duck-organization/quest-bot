@@ -1,6 +1,6 @@
 import { Listener } from '@sapphire/framework';
 import { Events, EmbedBuilder, Colors, type Message, type PartialMessage } from 'discord.js';
-import { logEmbed, truncate } from '#lib/logging.js';
+import { isLoggingChannel, logEmbed, truncate } from '#lib/logging.js';
 
 export class MessageDeleteListener extends Listener<typeof Events.MessageDelete> {
   public constructor(context: Listener.LoaderContext, options: Listener.Options) {
@@ -10,6 +10,7 @@ export class MessageDeleteListener extends Listener<typeof Events.MessageDelete>
   public async run(message: Message | PartialMessage) {
     const guild = message.guild;
     if (!guild) return;
+    if (await isLoggingChannel(guild, message.channel?.id)) return;
 
     const embed = new EmbedBuilder()
       .setTitle('Message Deleted')

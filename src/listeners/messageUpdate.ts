@@ -1,6 +1,6 @@
 import { Listener } from '@sapphire/framework';
 import { EmbedBuilder, Colors, type Message } from 'discord.js';
-import { logEmbed, truncate } from '#lib/logging.js';
+import { isLoggingChannel, logEmbed, truncate } from '#lib/logging.js';
 
 export class MessageUpdateListener extends Listener {
   public constructor(context: Listener.LoaderContext, options: Listener.Options) {
@@ -12,8 +12,12 @@ export class MessageUpdateListener extends Listener {
     const newMsg = newMessage as Message;
     const guild = newMsg.guild ?? oldMsg?.guild;
     if (!guild) return;
+    if (await isLoggingChannel(guild, newMsg.channel?.id ?? oldMsg?.channel?.id)) return;
 
-    if (oldMsg && oldMsg.content === newMsg.content) return;
+    const oldContent = oldMsg?.content ?? '';
+    const newContent = newMsg.content ?? '';
+
+    if (oldContent === newContent) return;
 
     const embed = new EmbedBuilder()
       .setTitle('Message Edited')
