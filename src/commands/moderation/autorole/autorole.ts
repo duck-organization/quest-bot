@@ -1,7 +1,7 @@
 import { Command } from '@sapphire/framework';
 import { MessageFlags } from 'discord.js';
 import { createAutoRole, getAutoRole, getAutoRoles, removeAutoRole } from '#lib/autorole.js';
-import { LimitError } from '#lib/limits.js';
+import { getQuestUnlimitedPurchaseComponents, LimitError } from '#lib/limits.js';
 import { emojis } from '#utils/emoji.js';
 
 export class AutoRoleCommand extends Command {
@@ -83,20 +83,36 @@ export class AutoRoleCommand extends Command {
       const botRole = interaction.options.getBoolean('bot_role', true);
 
       try {
-        await createAutoRole(interaction.guildId, interaction.guild.name, role.id, botRole);
+        await createAutoRole(
+          interaction.guildId,
+          interaction.guild.name,
+          role.id,
+          botRole,
+          interaction.client.application.entitlements
+        );
         await interaction.reply({
           content: `${emojis.rightArrow2} Added auto role ${role} (Bot Role: ${botRole}).`,
           flags: MessageFlags.Ephemeral
         });
       } catch (err) {
-        console.error(err);
         if (err instanceof LimitError) {
+          if (err.showQuestUnlimitedPrompt) {
+            await interaction.reply({
+              content: `${emojis.questUnlimited2} ${err.message} Unlock unlimited auto roles with QuestUnlimited.`,
+              components: getQuestUnlimitedPurchaseComponents(interaction.client.application.id),
+              flags: MessageFlags.Ephemeral
+            });
+            return;
+          }
+
           await interaction.reply({
             content: `${emojis.rightArrow2} ${err.message}`,
             flags: MessageFlags.Ephemeral
           });
           return;
         }
+
+        console.error(err);
 
         await interaction.reply({
           content: `${emojis.rightArrow2} That role is already an auto role in this server.`,

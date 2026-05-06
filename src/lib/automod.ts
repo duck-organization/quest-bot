@@ -1,5 +1,6 @@
 import { prisma } from './prisma.js';
-import { LIMITS_ENABLED, LimitError } from './limits.js';
+import { hasQuestUnlimitedAccess, LIMITS_ENABLED, LimitError } from './limits.js';
+import type { EntitlementManager } from 'discord.js';
 
 export class DuplicateAutoModError extends Error {
     public constructor() {
@@ -11,13 +12,16 @@ export class DuplicateAutoModError extends Error {
 export async function createAutoMod(
     guildId: string,
     guildName: string,
-    word:      string
+    word: string,
+    entitlements?: EntitlementManager
 ) {
-    if (LIMITS_ENABLED) {
+    const hasUnlimitedAccess = entitlements ? await hasQuestUnlimitedAccess(entitlements, guildId) : false;
+
+    if (LIMITS_ENABLED && !hasUnlimitedAccess) {
         const autoModCount = await prisma.autoMod.count({ where: { guildId } });
 
         if (autoModCount >= 10) {
-            throw new LimitError('A guild can only have up to 10 automod rules.');
+            throw new LimitError('A guild can only have up to 10 automod rules.', true);
         }
     }
 

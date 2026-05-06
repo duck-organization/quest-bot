@@ -1,7 +1,7 @@
 import { Command } from '@sapphire/framework';
 import { MessageFlags } from 'discord.js';
 import { createAutoMod, DuplicateAutoModError, getAutoMod, getAutoMods, removeAutoMod } from '#lib/automod.js';
-import { LimitError } from '#lib/limits.js';
+import { getQuestUnlimitedPurchaseComponents, LimitError } from '#lib/limits.js';
 import { emojis } from '#utils/emoji.js';
 
 export class AutoModCommand extends Command {
@@ -78,13 +78,27 @@ export class AutoModCommand extends Command {
     if (subcommand === 'add') {
       const word = interaction.options.getString('word', true).trim().toLowerCase();
       try {
-        await createAutoMod(interaction.guildId, interaction.guild.name, word);
+        await createAutoMod(
+          interaction.guildId,
+          interaction.guild.name,
+          word,
+          interaction.client.application.entitlements
+        );
         await interaction.reply({
           content: `${emojis.rightArrow2} The word '${word}' has been added to the automod list.`,
           flags: MessageFlags.Ephemeral
         });
       } catch (err) {
         if (err instanceof LimitError) {
+          if (err.showQuestUnlimitedPrompt) {
+            await interaction.reply({
+              content: `${emojis.questUnlimited2} ${err.message} Unlock unlimited automod rules with QuestUnlimited.`,
+              components: getQuestUnlimitedPurchaseComponents(interaction.client.application.id),
+              flags: MessageFlags.Ephemeral
+            });
+            return;
+          }
+
           await interaction.reply({
             content: `${emojis.rightArrow2} ${err.message}`,
             flags: MessageFlags.Ephemeral

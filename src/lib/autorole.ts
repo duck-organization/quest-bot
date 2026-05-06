@@ -1,17 +1,21 @@
 import { prisma } from './prisma.js';
-import { LIMITS_ENABLED, LimitError } from './limits.js';
+import { hasQuestUnlimitedAccess, LIMITS_ENABLED, LimitError } from './limits.js';
+import type { EntitlementManager } from 'discord.js';
 
 export async function createAutoRole(
     guildId: string,
     guildName: string,
     roleId: string,
-    botRole?: boolean
+    botRole?: boolean,
+    entitlements?: EntitlementManager
 ) {
-    if (LIMITS_ENABLED) {
+    const hasUnlimitedAccess = entitlements ? await hasQuestUnlimitedAccess(entitlements, guildId) : false;
+
+    if (LIMITS_ENABLED && !hasUnlimitedAccess) {
         const autoRoleCount = await prisma.autoRole.count({ where: { guildId } });
 
         if (autoRoleCount >= 5) {
-            throw new LimitError('A guild can only have up to 5 auto roles.');
+            throw new LimitError('A guild can only have up to 5 auto roles.', true);
         }
     }
 
@@ -21,14 +25,23 @@ export async function createAutoRole(
             create: { id: guildId, name: guildName },
             update: { name: guildName }
         });
-
-        return prisma.autoRole.create({
-            data: { guildId, roleId, botRole }
-        });
     }
 
-    return prisma.autoRole.create({
-        data: { guildId, roleId, botRole }
+    return prisma.autoRole.upsert({
+        where: {
+            guildId_roleId: {
+                guildId,
+                roleId
+            }
+        },
+        create: {
+            guildId,
+            roleId,
+            botRole
+        },
+        update: {
+            botRole
+        }
     });
 }
 
