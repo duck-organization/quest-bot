@@ -32,7 +32,7 @@ export function getQuestUnlimitedUrl(applicationId: string) {
 
 export function getQuestUnlimitedPurchaseComponents(applicationId: string) {
   const purchaseButton = new ButtonBuilder()
-    .setLabel('Upgrade to QuestUnlimited')
+    .setLabel('Upgrade to Quest Unlimited')
     .setStyle(ButtonStyle.Link)
     .setURL(getQuestUnlimitedUrl(applicationId));
 
