@@ -26,11 +26,15 @@ export async function hasQuestUnlimitedAccess(entitlements: EntitlementManager, 
   }
 }
 
+export function getQuestUnlimitedUrl(applicationId: string) {
+  return `https://discord.com/application-directory/${applicationId}/store/${QUEST_UNLIMITED_SKU_ID}`;
+}
+
 export function getQuestUnlimitedPurchaseComponents(applicationId: string) {
   const purchaseButton = new ButtonBuilder()
     .setLabel('Upgrade to QuestUnlimited')
     .setStyle(ButtonStyle.Link)
-    .setURL(`https://discord.com/application-directory/${applicationId}/store/${QUEST_UNLIMITED_SKU_ID}`);
+    .setURL(getQuestUnlimitedUrl(applicationId));
 
   return [new ActionRowBuilder<ButtonBuilder>().addComponents(purchaseButton)];
 }
