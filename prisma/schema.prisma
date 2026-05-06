@@ -22,6 +22,7 @@ model Server {
   reminders      Reminder[]
   tickets        Ticket[]
   autoroles      AutoRole[]
+  automods       AutoMod[]
   
   @@map("server")
 }
@@ -112,4 +113,17 @@ model AutoRole {
   @@unique([guildId, roleId])
   @@index([guildId])
   @@map("autoroles")
+}
+
+model AutoMod {
+  id           String    @id @default(cuid())
+  guildId      String
+  word         String
+  createdAt    DateTime  @default(now())
+  
+  server      Server    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, word])
+  @@index([guildId])
+  @@map("automods")
 }
