@@ -217,11 +217,22 @@ export class ConfessionButtonHandler extends InteractionHandler {
 
       const reason = modalSubmit.fields.getTextInputValue('confession-report-reason');
       await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
-      const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
+      let channel = null;
+
+      try {
+        if (interaction.inGuild() && interaction.guild) {
+          channel = await interaction.guild.channels.fetch(context.channelId).catch(() => null);
+        } else {
+          channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
+        }
+      } catch (err) {
+        channel = null;
+      }
 
       if (!channel || !channel.isTextBased()) {
+        console.error('Confession channel fetch failed', { channelId: context.channelId, context });
         await modalSubmit.editReply({
-          content: `${emojis.rightArrow2} The confession channel is no longer available.`
+          content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available.`
         });
         return;
       }
@@ -312,11 +323,22 @@ export class ConfessionButtonHandler extends InteractionHandler {
         return;
       }
 
-      const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
+      let channel = null;
+
+      try {
+        if (interaction.inGuild() && interaction.guild) {
+          channel = await interaction.guild.channels.fetch(context.channelId).catch(() => null);
+        } else {
+          channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
+        }
+      } catch (err) {
+        channel = null;
+      }
 
       if (!channel || !channel.isTextBased()) {
+        console.error('Confession channel fetch failed (delete flow)', { channelId: context.channelId, context });
         await interaction.reply({
-          content: `${emojis.rightArrow2} The confession channel is no longer available.`
+          content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available.`
         });
         return;
       }
