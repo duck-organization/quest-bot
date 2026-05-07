@@ -301,16 +301,36 @@ export class ConfessionButtonHandler extends InteractionHandler {
       }
 
       const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
-      const message = channel instanceof TextChannel ? await channel.messages.fetch(context.messageId).catch(() => null) : null;
 
-      if (message) {
-        const deletedEmbed = new EmbedBuilder()
-          .setTitle('Confession')
-          .setDescription('This confession was deleted by moderators.')
-          .setColor(0xed4245)
-          .setTimestamp();
+      if (!(channel instanceof TextChannel)) {
+        await interaction.reply({
+          content: `${emojis.rightArrow2} The confession channel is no longer available.`
+        });
+        return;
+      }
 
-        await message.edit({ embeds: [deletedEmbed], components: [] }).catch(() => null);
+      const message = await channel.messages.fetch(context.messageId).catch(() => null);
+
+      if (!message) {
+        await interaction.reply({
+          content: `${emojis.rightArrow2} That confession no longer exists.`
+        });
+        return;
+      }
+
+      const deletedEmbed = new EmbedBuilder()
+        .setTitle('Confession')
+        .setDescription('This confession was deleted by moderators.')
+        .setColor(0xed4245)
+        .setTimestamp();
+
+      try {
+        await message.edit({ embeds: [deletedEmbed], components: [] });
+      } catch {
+        await interaction.reply({
+          content: `${emojis.rightArrow2} I could not update the confession message.`
+        });
+        return;
       }
 
       await removeConfessionContext(context.messageId);
