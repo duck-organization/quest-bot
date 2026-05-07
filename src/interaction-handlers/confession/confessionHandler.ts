@@ -329,16 +329,30 @@ export class ConfessionButtonHandler extends InteractionHandler {
         if (interaction.inGuild() && interaction.guild) {
           channel = await interaction.guild.channels.fetch(context.channelId).catch(() => null);
         } else {
-          channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
+          const guild = await interaction.client.guilds.fetch(context.guildId).catch(() => null);
+          if (guild) {
+            channel = await guild.channels.fetch(context.channelId).catch(() => null);
+          }
+          if (!channel) {
+            channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
+          }
         }
       } catch (err) {
         channel = null;
       }
 
       if (!channel || !channel.isTextBased()) {
-        console.error('Confession channel fetch failed (delete flow)', { channelId: context.channelId, context });
+        console.error('Confession channel fetch failed (delete flow)', { 
+          channelId: context.channelId, 
+          guildId: context.guildId,
+          context 
+        });
+        
+        // Still allow removal from database if channel is gone
+        await removeConfessionContext(context.messageId);
+        
         await interaction.reply({
-          content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available.`
+          content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available, but the confession has been removed from records.`
         });
         return;
       }
@@ -346,8 +360,11 @@ export class ConfessionButtonHandler extends InteractionHandler {
       const message = await channel.messages.fetch(context.messageId).catch(() => null);
 
       if (!message) {
+        // Message was already deleted, just clean up the record
+        await removeConfessionContext(context.messageId);
+        
         await interaction.reply({
-          content: `${emojis.rightArrow2} That confession no longer exists.`
+          content: `${emojis.rightArrow2} That confession no longer exists, but the record has been cleaned up.`
         });
         return;
       }
