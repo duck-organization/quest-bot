@@ -145,6 +145,42 @@ function buildLoggingPanel(settings: ServerSettings, guild: Guild, status?: stri
   };
 }
 
+function buildConfessionPanel(settings: ServerSettings, guild: Guild, status?: string) {
+  const currentChannelName = settings.confessionChannelId
+    ? guild.channels.cache.get(settings.confessionChannelId)?.name
+    : null;
+
+  const toggleMenu = new StringSelectMenuBuilder()
+    .setCustomId('confessionToggle')
+    .setPlaceholder(`${settings.confessionEnabled ? 'Enabled' : 'Disabled'}`)
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel('Enable')
+        .setDescription('Enable confessions for this server.')
+        .setValue('enable'),
+      new StringSelectMenuOptionBuilder()
+        .setLabel('Disable')
+        .setDescription('Disable confessions for this server.')
+        .setValue('disable')
+    );
+
+  const channelMenu = new ChannelSelectMenuBuilder()
+    .setCustomId('confessionChannel')
+    .setPlaceholder(currentChannelName ? `#${currentChannelName}` : 'Select a channel for confessions')
+    .setChannelTypes(ChannelType.GuildText);
+
+  return {
+    content: status
+      ? `${emojis.rightArrow1} **Confessions** module:
+${emojis.rightArrow2} ${status}`
+      : `${emojis.rightArrow1} **Confessions** module:`,
+    components: [
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
+      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu)
+    ]
+  };
+}
+
 async function normalizeTicketSettings(guildId: string, guild: Guild, settings: ServerSettings) {
   if (!settings.ticketCategoryId) return settings;
 
@@ -200,6 +236,11 @@ export class SettingsCommand extends Command {
           .setLabel('Logging')
           .setDescription('Configure server channel logging.')
           .setValue('logging')
+          ,
+          new StringSelectMenuOptionBuilder()
+            .setLabel('Confessions')
+            .setDescription('Configure where confessions are posted and whether they are enabled.')
+            .setValue('confessions')
       );
 
     const response = await interaction.reply({
@@ -248,6 +289,8 @@ export class SettingsCommand extends Command {
         await settingChoice.update(buildTicketPanel(settings, guild));
       } else if (settingChoice.values[0] === 'logging') {
         await settingChoice.update(buildLoggingPanel(settings, guild));
+      } else if (settingChoice.values[0] === 'confessions') {
+        await settingChoice.update(buildConfessionPanel(settings, guild));
       } else {
         return;
       }
@@ -300,6 +343,16 @@ export class SettingsCommand extends Command {
           const next = await updateSettings(guildId, guild.name, { loggingChannelId: channelId });
 
           await i.update(buildLoggingPanel(next, guild, `Logging channel set to <#${channelId}>.`));
+        } else if (i.customId === 'confessionToggle' && i.isStringSelectMenu()) {
+          const enable = i.values[0] === 'enable';
+          const next = await updateSettings(guildId, guild.name, { confessionEnabled: enable });
+
+          await i.update(buildConfessionPanel(next, guild, `Confessions **${enable ? 'enabled' : 'disabled'}**.`));
+        } else if (i.customId === 'confessionChannel' && i.isChannelSelectMenu()) {
+          const channelId = i.values[0];
+          const next = await updateSettings(guildId, guild.name, { confessionChannelId: channelId });
+
+          await i.update(buildConfessionPanel(next, guild, `Confession channel set to <#${channelId}>.`));
         }
       });
 
