@@ -219,7 +219,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
       await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
       const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
 
-      if (!(channel instanceof TextChannel)) {
+      if (!channel || !channel.isTextBased()) {
         await modalSubmit.editReply({
           content: `${emojis.rightArrow2} The confession channel is no longer available.`
         });
@@ -314,7 +314,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
 
       const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
 
-      if (!(channel instanceof TextChannel)) {
+      if (!channel || !channel.isTextBased()) {
         await interaction.reply({
           content: `${emojis.rightArrow2} The confession channel is no longer available.`
         });
