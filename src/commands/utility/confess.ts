@@ -20,7 +20,7 @@ export class ConfessCommand extends Command {
     super(context, { ...options });
   }
 
-  public override registerApplicationCommands(registry: Command.Registry) {
+  public override registerApplicationCommands(_registry: Command.Registry) {
     // Registration is handled per-guild at runtime in the Ready listener
   }
 
