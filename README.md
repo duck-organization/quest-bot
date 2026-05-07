@@ -11,6 +11,7 @@ Quest is capable of:
 - Utilties such as reminders.
 - Complete ticket system.
 - Welcoming new members.
+- Fun stuff such as confessions!
 
 ## Links
 
