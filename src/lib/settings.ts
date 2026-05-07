@@ -6,6 +6,7 @@ export type ServerSettings = {
     welcomeChannelId: string | null;
     ticketCategoryId: string | null;
     staffRole: string | null;
+    confessionChannelId: string | null;
     loggingEnabled?: boolean;
     loggingChannelId?: string | null;
 };
@@ -15,6 +16,7 @@ export const DefaultSettings: ServerSettings = {
     welcomeChannelId: null,
     ticketCategoryId: null,
     staffRole: null,
+    confessionChannelId: null,
     loggingEnabled: false,
     loggingChannelId: null,
 };
