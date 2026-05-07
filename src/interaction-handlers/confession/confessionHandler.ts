@@ -23,7 +23,14 @@ import { getSettings } from '#lib/settings.js';
 import { emojis } from '#utils/emoji.js';
 
 function parseConfessionButton(customId: string) {
-  const [action, messageId] = customId.split(':');
+  const [action, ...parts] = customId.split(':');
+
+  if (action === 'delete-confession' && parts.length >= 3) {
+    const [guildId, channelId, messageId] = parts;
+    return { action, guildId, channelId, messageId };
+  }
+
+  const [messageId] = parts;
   return { action, messageId };
 }
 
@@ -209,12 +216,12 @@ export class ConfessionButtonHandler extends InteractionHandler {
       }
 
       const reason = modalSubmit.fields.getTextInputValue('confession-report-reason');
+      await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
       const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
 
       if (!(channel instanceof TextChannel)) {
-        await modalSubmit.reply({
-          content: `${emojis.rightArrow2} The confession channel is no longer available.`,
-          flags: MessageFlags.Ephemeral
+        await modalSubmit.editReply({
+          content: `${emojis.rightArrow2} The confession channel is no longer available.`
         });
         return;
       }
@@ -222,15 +229,14 @@ export class ConfessionButtonHandler extends InteractionHandler {
       const message = await channel.messages.fetch(context.messageId).catch(() => null);
 
       if (!message) {
-        await modalSubmit.reply({
-          content: `${emojis.rightArrow2} That confession no longer exists.`,
-          flags: MessageFlags.Ephemeral
+        await modalSubmit.editReply({
+          content: `${emojis.rightArrow2} That confession no longer exists.`
         });
         return;
       }
 
       const deleteButton = new ButtonBuilder()
-        .setCustomId(`delete-confession:${parsed.messageId}`)
+        .setCustomId(`delete-confession:${context.guildId}:${context.channelId}:${context.messageId}`)
         .setLabel('Delete Confession')
         .setStyle(ButtonStyle.Danger);
 
@@ -282,7 +288,14 @@ export class ConfessionButtonHandler extends InteractionHandler {
         return;
       }
 
-      const context = await getConfessionContext(parsed.messageId);
+      const context = parsed.guildId && parsed.channelId && parsed.messageId
+        ? {
+            guildId: parsed.guildId,
+            channelId: parsed.channelId,
+            messageId: parsed.messageId,
+            threadId: ''
+          }
+        : await getConfessionContext(parsed.messageId);
 
       if (!context) {
         await interaction.reply({
