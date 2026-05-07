@@ -266,16 +266,14 @@ export class ConfessionButtonHandler extends InteractionHandler {
       const delivered = deliveries.some((result) => result.status === 'fulfilled');
 
       if (!delivered) {
-        await modalSubmit.reply({
+        await modalSubmit.editReply({
           content: `${emojis.rightArrow2} I could not contact any configured moderators.`,
-          flags: MessageFlags.Ephemeral
         });
         return;
       }
 
-      await modalSubmit.reply({
+      await modalSubmit.editReply({
         content: `${emojis.rightArrow2} Your report was sent to the bot moderators.`,
-        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -288,14 +286,15 @@ export class ConfessionButtonHandler extends InteractionHandler {
         return;
       }
 
-      const context = parsed.guildId && parsed.channelId && parsed.messageId
-        ? {
-            guildId: parsed.guildId,
-            channelId: parsed.channelId,
-            messageId: parsed.messageId,
-            threadId: ''
-          }
-        : await getConfessionContext(parsed.messageId);
+      const context =
+        parsed.guildId && parsed.channelId && parsed.messageId
+          ? {
+              guildId: parsed.guildId,
+              channelId: parsed.channelId,
+              messageId: parsed.messageId,
+              threadId: ''
+            }
+          : await getConfessionContext(parsed.messageId);
 
       if (!context) {
         await interaction.reply({
