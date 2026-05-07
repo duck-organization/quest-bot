@@ -94,7 +94,13 @@ export class ConfessCommand extends Command {
 
     await message.edit({ components: [row] });
 
-    storeConfessionContext({ guildId: interaction.guild.id, channelId: confessionChannel.id, messageId: message.id, threadId: thread.id });
+    try {
+      await storeConfessionContext({ guildId: interaction.guild.id, channelId: confessionChannel.id, messageId: message.id, threadId: thread.id });
+    } catch (error) {
+      await thread.delete().catch(() => null);
+      await message.delete().catch(() => null);
+      throw error;
+    }
 
     await modalSubmit.reply({ content: `${emojis.rightArrow2} Confession sent.`, flags: MessageFlags.Ephemeral });
   }

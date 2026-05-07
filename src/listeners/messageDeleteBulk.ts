@@ -1,5 +1,6 @@
 import { Listener } from '@sapphire/framework';
 import { EmbedBuilder, Colors, type Collection } from 'discord.js';
+import { removeConfessionContexts } from '#lib/confessions.js';
 import { isLoggingChannel, logEmbed } from '#lib/logging.js';
 
 export class MessageDeleteBulkListener extends Listener {
@@ -24,6 +25,7 @@ export class MessageDeleteBulkListener extends Listener {
       )
       .setTimestamp();
 
+    await removeConfessionContexts([...messages.keys()]).catch(() => null);
     await logEmbed(guild, embed);
   }
 }

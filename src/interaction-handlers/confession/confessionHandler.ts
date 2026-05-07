@@ -126,17 +126,16 @@ export class ConfessionButtonHandler extends InteractionHandler {
         .setLabel('Report')
         .setStyle(ButtonStyle.Danger);
 
-      storeConfessionContext({
-        guildId: interaction.guild.id,
-        channelId: confessionChannel.id,
-        messageId: message.id,
-        threadId: thread.id
-      });
-
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton);
 
       try {
         await message.edit({ components: [row] });
+        await storeConfessionContext({
+          guildId: interaction.guild.id,
+          channelId: confessionChannel.id,
+          messageId: message.id,
+          threadId: thread.id
+        });
       } catch (error) {
         await thread.delete().catch(() => null);
         await message.delete().catch(() => null);
@@ -161,7 +160,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
         return;
       }
 
-      const context = getConfessionContext(parsed.messageId);
+      const context = await getConfessionContext(parsed.messageId);
 
       if (!context) {
         await interaction.reply({
@@ -283,7 +282,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
         return;
       }
 
-      const context = getConfessionContext(parsed.messageId);
+      const context = await getConfessionContext(parsed.messageId);
 
       if (!context) {
         await interaction.reply({
@@ -302,15 +301,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
       }
 
       const channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
-
-      if (!(channel instanceof TextChannel)) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} The confession channel is no longer available.`
-        });
-        return;
-      }
-
-      const message = await channel.messages.fetch(context.messageId).catch(() => null);
+      const message = channel instanceof TextChannel ? await channel.messages.fetch(context.messageId).catch(() => null) : null;
 
       if (message) {
         const deletedEmbed = new EmbedBuilder()
@@ -322,7 +313,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
         await message.edit({ embeds: [deletedEmbed], components: [] }).catch(() => null);
       }
 
-      removeConfessionContext(context.messageId);
+      await removeConfessionContext(context.messageId);
 
       await interaction.reply({
         content: `${emojis.rightArrow2} Confession marked as deleted.`
