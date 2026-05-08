@@ -168,7 +168,8 @@ export class ConfessionButtonHandler extends InteractionHandler {
       const message = await confessionChannel.send({ embeds: [embed] });
 
       try {
-        const thread = await message.startThread({ name: `confession-${message.id}` });
+        const threadName = confession.replace(/\s+/g, ' ').slice(0, 10).toLowerCase() || 'confession';
+        const thread = await message.startThread({ name: `confession-${threadName}` });
 
         const reportButton = new ButtonBuilder()
           .setCustomId(`report-confession:${message.id}`)

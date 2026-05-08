@@ -18,7 +18,7 @@ async function generateTranscript(channel: TextChannel, ticket: any): Promise<st
   
   const sortedMessages = Array.from(messages.values()).reverse();
   
-  let transcript = `Ticket <#${ticket.ticketNumber}> Transcript\n`;
+  let transcript = `Ticket <${ticket.ticketNumber}>-<@${ticket.userId}> Transcript\n`;
   transcript += `Created: ${ticket.createdAt.toLocaleString()}\n`;
   transcript += `User: <@${ticket.userId}>\n`;
   if (ticket.reason) {
