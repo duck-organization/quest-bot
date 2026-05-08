@@ -63,6 +63,7 @@ export class ConfessCommand extends Command {
         filter: (m) => m.customId === 'create-confession-modal' && m.user.id === interaction.user.id,
         time: 60_000
       });
+      await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
     } catch {
       return;
     }
@@ -72,7 +73,7 @@ export class ConfessCommand extends Command {
     const confessionChannel = await interaction.guild.channels.fetch(settings.confessionChannelId).catch(() => null);
 
     if (!(confessionChannel instanceof TextChannel)) {
-      await modalSubmit.reply({ content: `${emojis.rightArrow2} The configured confession channel is unavailable.`, flags: MessageFlags.Ephemeral });
+      await modalSubmit.editReply({ content: `${emojis.rightArrow2} The configured confession channel is unavailable.` });
       return;
     }
 
@@ -83,7 +84,8 @@ export class ConfessCommand extends Command {
     let thread;
 
     try {
-      thread = await message.startThread({ name: `confession-${message.id}` });
+      const threadName = confession.replace(/\s+/g, ' ').slice(0, 10).toLowerCase() || 'confession';
+      thread = await message.startThread({ name: `confession-${threadName}` });
     } catch (error) {
       await message.delete().catch(() => null);
       throw error;
@@ -95,13 +97,19 @@ export class ConfessCommand extends Command {
     await message.edit({ components: [row] });
 
     try {
-      await storeConfessionContext({ guildId: interaction.guild.id, channelId: confessionChannel.id, messageId: message.id, threadId: thread.id });
+      await storeConfessionContext({
+        guildId: interaction.guild.id,
+        channelId: confessionChannel.id,
+        messageId: message.id,
+        threadId: thread.id,
+        creatorId: modalSubmit.user.id
+      });
     } catch (error) {
       await thread.delete().catch(() => null);
       await message.delete().catch(() => null);
       throw error;
     }
 
-    await modalSubmit.reply({ content: `${emojis.rightArrow2} Confession sent.`, flags: MessageFlags.Ephemeral });
+    await modalSubmit.editReply({ content: `${emojis.rightArrow2} Confession sent.` });
   }
 }

@@ -134,6 +134,7 @@ model Confession {
   guildId   String
   channelId String
   threadId  String
+  creatorId String?
   createdAt DateTime @default(now())
 
   server    Server   @relation(fields: [guildId], references: [id], onDelete: Cascade)

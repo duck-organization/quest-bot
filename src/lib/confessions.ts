@@ -5,6 +5,7 @@ export type ConfessionContext = {
     channelId: string;
     messageId: string;
     threadId: string;
+    creatorId?: string;
 };
 
 export function getModeratorIds() {
@@ -31,6 +32,7 @@ export async function getConfessionContext(messageId: string) {
             channelId: true,
             messageId: true,
             threadId: true,
+            creatorId: true,
         },
     });
 }
