@@ -2,7 +2,7 @@ import type { EntitlementManager } from 'discord.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export const LIMITS_ENABLED = process.env.LIMITS === 'true';
-export const QUEST_UNLIMITED_SKU_ID = '1501683352820777092';
+export const QUEST_UNLIMITED_SKU_ID = '1502381886025240788';
 
 export class LimitError extends Error {
   public constructor(message: string, public readonly showQuestUnlimitedPrompt = false) {
