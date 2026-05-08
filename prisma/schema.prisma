@@ -23,6 +23,7 @@ model Server {
   tickets        Ticket[]
   autoroles      AutoRole[]
   automods       AutoMod[]
+  confessions    Confession[]
   
   @@map("server")
 }
@@ -126,4 +127,17 @@ model AutoMod {
   @@unique([guildId, word])
   @@index([guildId])
   @@map("automods")
+}
+
+model Confession {
+  messageId String   @id
+  guildId   String
+  channelId String
+  threadId  String
+  createdAt DateTime @default(now())
+
+  server    Server   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+  @@map("confessions")
 }

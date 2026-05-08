@@ -21,7 +21,9 @@ export class ConfessCommand extends Command {
   }
 
   public override registerApplicationCommands(_registry: Command.Registry) {
-    // Registration is handled per-guild at runtime in the Ready listener
+    _registry.registerChatInputCommand((builder) =>
+      builder.setName('confess').setDescription('Create a confession')
+    );
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
@@ -32,8 +34,13 @@ export class ConfessCommand extends Command {
 
     const settings = await getSettings(interaction.guild.id, interaction.guild.name);
 
-    if (!settings.confessionChannelId || !settings.confessionEnabled) {
-      await interaction.reply({ content: `${emojis.rightArrow2} Confessions are not enabled or configured for this server.`, flags: MessageFlags.Ephemeral });
+    if (settings.confessionEnabled === false) {
+      await interaction.reply({ content: `${emojis.rightArrow2} Confessions are disabled in this server.`, flags: MessageFlags.Ephemeral });
+      return;
+    }
+
+    if (!settings.confessionChannelId) {
+      await interaction.reply({ content: `${emojis.rightArrow2} Confessions are not configured in this server.`, flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -87,7 +94,13 @@ export class ConfessCommand extends Command {
 
     await message.edit({ components: [row] });
 
-    storeConfessionContext({ guildId: interaction.guild.id, channelId: confessionChannel.id, messageId: message.id, threadId: thread.id });
+    try {
+      await storeConfessionContext({ guildId: interaction.guild.id, channelId: confessionChannel.id, messageId: message.id, threadId: thread.id });
+    } catch (error) {
+      await thread.delete().catch(() => null);
+      await message.delete().catch(() => null);
+      throw error;
+    }
 
     await modalSubmit.reply({ content: `${emojis.rightArrow2} Confession sent.`, flags: MessageFlags.Ephemeral });
   }
