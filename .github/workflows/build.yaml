@@ -26,12 +26,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
-        run: pnpm build
+        run: pnpm turbo build
       - name: Build production image
         run: docker build -t quest-bot:test .
       - name: Test production image
         run: >
           docker run --rm --entrypoint sh quest-bot:test -c
           "set -e;
-          test -f /app/dist/index.js;
-          node --check /app/dist/index.js"
+          test -f /app/apps/dist/index.js;
+          node --check /app/apps/dist/index.js"
