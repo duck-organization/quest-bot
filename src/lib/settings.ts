@@ -5,6 +5,7 @@ export type ServerSettings = {
     welcomePeople: boolean;
     welcomeChannelId: string | null;
     ticketCategoryId: string | null;
+    ticketTranscriptChannelId?: string | null;
     staffRole: string | null;
     confessionChannelId: string | null;
     confessionEnabled: boolean;
@@ -16,6 +17,7 @@ export const DefaultSettings: ServerSettings = {
     welcomePeople: false,
     welcomeChannelId: null,
     ticketCategoryId: null,
+    ticketTranscriptChannelId: null,
     staffRole: null,
     confessionChannelId: null,
     confessionEnabled: false,

@@ -1,8 +1,45 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
-import type { ButtonInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ChannelType, AttachmentBuilder } from 'discord.js';
+import type { ButtonInteraction, TextChannel } from 'discord.js';
 import { emojis } from '#utils/emoji.js';
 import { getTicketId, removeTicket } from '#lib/tickets.js';
+import { getSettings } from '#lib/settings.js';
+
+async function generateTranscript(channel: TextChannel, ticket: any): Promise<string> {
+  const messages = new Map();
+  let lastId: string | undefined;
+
+  while (true) {
+    const fetched = await channel.messages.fetch({ limit: 100, before: lastId });
+    if (fetched.size === 0) break;
+    fetched.forEach(msg => messages.set(msg.id, msg));
+    lastId = fetched.last()?.id;
+  }
+  
+  const sortedMessages = Array.from(messages.values()).reverse();
+  
+  let transcript = `Ticket <#${ticket.ticketNumber}> Transcript\n`;
+  transcript += `Created: ${ticket.createdAt.toLocaleString()}\n`;
+  transcript += `User: <@${ticket.userId}>\n`;
+  if (ticket.reason) {
+    transcript += `Reason: ${ticket.reason}\n`;
+  }
+  transcript += `${'='.repeat(50)}\n\n`;
+  
+  for (const message of sortedMessages) {
+    const timestamp = message.createdAt.toLocaleString();
+    const author = message.author.tag;
+    const content = message.content || '[No text content]';
+    
+    transcript += `[${timestamp}] ${author}: ${content}\n`;
+    
+    if (message.attachments.size > 0) {
+      transcript += `  Attachments: ${Array.from(message.attachments.values()).map((a: any) => a.url).join(', ')}\n`;
+    }
+  }
+  
+  return transcript;
+}
 
 export class ButtonHandler extends InteractionHandler {
   public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -88,7 +125,30 @@ export class ButtonHandler extends InteractionHandler {
     const ticket = await getTicketId(interaction.guild.id, channel.id);
 
     try { 
-      if (ticket) {
+      if (ticket && channel.isTextBased()) {
+        const settings = await getSettings(interaction.guild.id, interaction.guild.name);
+        
+        // Send transcript if configured
+        if (settings.ticketTranscriptChannelId) {
+          const transcriptChannel = await interaction.guild.channels.fetch(settings.ticketTranscriptChannelId).catch(() => null);
+          
+          if (transcriptChannel && transcriptChannel.type === ChannelType.GuildText) {
+            try {
+              const transcript = await generateTranscript(channel as TextChannel, ticket);
+              const attachment = new AttachmentBuilder(Buffer.from(transcript), {
+                name: `ticket-${ticket.ticketNumber}-transcript.txt`
+              });
+              
+              await (transcriptChannel as TextChannel).send({
+                content: `📋 **Ticket #${ticket.ticketNumber}** transcript - Closed by ${interaction.user.tag}`,
+                files: [attachment]
+              });
+            } catch (transcriptErr) {
+              console.error('Failed to send ticket transcript:', transcriptErr);
+            }
+          }
+        }
+        
         await removeTicket(ticket.id);
       }
 

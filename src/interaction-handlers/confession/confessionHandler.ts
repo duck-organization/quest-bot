@@ -10,7 +10,7 @@ import {
   TextChannel,
   TextInputBuilder,
   TextInputStyle,
-  type ButtonInteraction
+  type ButtonInteraction,
 } from 'discord.js';
 import {
   getModeratorIds,
@@ -22,16 +22,62 @@ import {
 import { getSettings } from '#lib/settings.js';
 import { emojis } from '#utils/emoji.js';
 
-function parseConfessionButton(customId: string) {
+interface ParsedConfessionButton {
+  action: string;
+  messageId?: string;
+  guildId?: string;
+  channelId?: string;
+}
+
+function parseConfessionButton(customId: string): ParsedConfessionButton {
   const [action, ...parts] = customId.split(':');
+  const result: ParsedConfessionButton = { action };
 
   if (action === 'delete-confession' && parts.length >= 3) {
-    const [guildId, channelId, messageId] = parts;
-    return { action, guildId, channelId, messageId };
+    [result.guildId, result.channelId, result.messageId] = parts;
+  } else if (parts.length > 0) {
+    [result.messageId] = parts;
   }
 
-  const [messageId] = parts;
-  return { action, messageId };
+  return result;
+}
+
+function createTextInputModal(customId: string, title: string, inputId: string, label: string) {
+  const input = new TextInputBuilder()
+    .setCustomId(inputId)
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true)
+    .setMaxLength(1_000);
+
+  return new ModalBuilder()
+    .setCustomId(customId)
+    .setTitle(title)
+    .addLabelComponents(new LabelBuilder().setLabel(label).setTextInputComponent(input));
+}
+
+async function fetchConfessionChannel(interaction: ButtonInteraction, channelId: string) {
+  try {
+    let channel = null;
+
+    if (interaction.inGuild() && interaction.guild) {
+      channel = await interaction.guild.channels.fetch(channelId).catch(() => null);
+    }
+
+    if (!channel) {
+      const guild = await interaction.client.guilds.cache.find((g) => g.channels.cache.has(channelId));
+      if (guild) {
+        channel = await guild.channels.fetch(channelId).catch(() => null);
+      }
+    }
+
+    if (!channel) {
+      channel = await interaction.client.channels.fetch(channelId).catch(() => null);
+    }
+
+    return channel?.isTextBased() ? channel : null;
+  } catch {
+    return null;
+  }
 }
 
 export class ConfessionButtonHandler extends InteractionHandler {
@@ -56,54 +102,55 @@ export class ConfessionButtonHandler extends InteractionHandler {
 
   public async run(interaction: ButtonInteraction) {
     if (interaction.customId === 'create-confession') {
-      if (!interaction.inGuild() || !interaction.guild) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} This button can only be used in a server.`,
-          flags: MessageFlags.Ephemeral
-        });
-        return;
-      }
+      await this.handleCreateConfession(interaction);
+      return;
+    }
 
-      const settings = await getSettings(interaction.guild.id, interaction.guild.name);
+    const parsed = parseConfessionButton(interaction.customId);
 
-      if (!settings.confessionChannelId) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} Confessions are not configured yet.`,
-          flags: MessageFlags.Ephemeral
-        });
-        return;
-      }
+    if (parsed.action === 'report-confession') {
+      await this.handleReportConfession(interaction, parsed);
+      return;
+    }
 
-      const confessionInput = new TextInputBuilder()
-        .setCustomId('confession-text')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true)
-        .setMaxLength(1_000);
+    if (parsed.action === 'delete-confession') {
+      await this.handleDeleteConfession(interaction, parsed);
+    }
+  }
 
-      const confessionLabel = new LabelBuilder().setLabel('Confession').setTextInputComponent(confessionInput);
+  private async handleCreateConfession(interaction: ButtonInteraction) {
+    if (!interaction.inGuild() || !interaction.guild) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} This button can only be used in a server.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
 
-      const modal = new ModalBuilder()
-        .setCustomId('create-confession-modal')
-        .setTitle('Create Confession')
-        .addLabelComponents(confessionLabel);
+    const settings = await getSettings(interaction.guild.id, interaction.guild.name);
 
-      await interaction.showModal(modal);
+    if (!settings.confessionChannelId) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} Confessions are not configured yet.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
 
-      let modalSubmit;
+    const modal = createTextInputModal('create-confession-modal', 'Create Confession', 'confession-text', 'Confession');
+    await interaction.showModal(modal);
 
-      try {
-        modalSubmit = await interaction.awaitModalSubmit({
-          filter: (modalInteraction) =>
-            modalInteraction.customId === 'create-confession-modal' &&
-            modalInteraction.user.id === interaction.user.id,
-          time: 60_000
-        });
-      } catch {
-        return;
-      }
+    try {
+      const modalSubmit = await interaction.awaitModalSubmit({
+        filter: (modal) =>
+          modal.customId === 'create-confession-modal' && modal.user.id === interaction.user.id,
+        time: 60_000
+      });
 
       const confession = modalSubmit.fields.getTextInputValue('confession-text');
-      const confessionChannel = await interaction.guild.channels.fetch(settings.confessionChannelId).catch(() => null);
+      const confessionChannel = await interaction.guild.channels
+        .fetch(settings.confessionChannelId)
+        .catch(() => null);
 
       if (!(confessionChannel instanceof TextChannel)) {
         await modalSubmit.reply({
@@ -113,282 +160,240 @@ export class ConfessionButtonHandler extends InteractionHandler {
         return;
       }
 
-      const embed = new EmbedBuilder().setTitle('Confession').setDescription(confession).setTimestamp();
+      const embed = new EmbedBuilder()
+        .setTitle('Confession')
+        .setDescription(confession)
+        .setTimestamp();
 
       const message = await confessionChannel.send({ embeds: [embed] });
 
-      let thread;
-
       try {
-        thread = await message.startThread({
-          name: `confession-${message.id}`
-        });
-      } catch (error) {
-        await message.delete().catch(() => null);
-        throw error;
-      }
+        const thread = await message.startThread({ name: `confession-${message.id}` });
 
-      const reportButton = new ButtonBuilder()
-        .setCustomId(`report-confession:${message.id}`)
-        .setLabel('Report')
-        .setStyle(ButtonStyle.Danger);
+        const reportButton = new ButtonBuilder()
+          .setCustomId(`report-confession:${message.id}`)
+          .setLabel('Report')
+          .setStyle(ButtonStyle.Danger);
 
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton);
+        await message.edit({ components: [new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton)] });
 
-      try {
-        await message.edit({ components: [row] });
         await storeConfessionContext({
           guildId: interaction.guild.id,
           channelId: confessionChannel.id,
           messageId: message.id,
           threadId: thread.id
         });
+
+        await modalSubmit.reply({
+          content: `${emojis.rightArrow1} Confession sent.`,
+          flags: MessageFlags.Ephemeral
+        });
       } catch (error) {
-        await thread.delete().catch(() => null);
         await message.delete().catch(() => null);
         throw error;
       }
+    } catch {
+      return;
+    }
+  }
 
-      await modalSubmit.reply({
-        content: `${emojis.rightArrow2} Confession sent.`,
+  private async handleReportConfession(interaction: ButtonInteraction, parsed: ParsedConfessionButton) {
+    if (!interaction.inGuild() || !interaction.guild || !parsed.messageId) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} This confession cannot be reported right now.`,
         flags: MessageFlags.Ephemeral
       });
       return;
     }
 
-    const parsed = parseConfessionButton(interaction.customId);
+    const context = await getConfessionContext(parsed.messageId);
 
-    if (parsed.action === 'report-confession') {
-      if (!interaction.inGuild() || !interaction.guild || !parsed.messageId) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} This confession cannot be reported right now.`,
-          flags: MessageFlags.Ephemeral
-        });
-        return;
-      }
-
-      const context = await getConfessionContext(parsed.messageId);
-
-      if (!context) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} This confession is no longer available.`,
-          flags: MessageFlags.Ephemeral
-        });
-        return;
-      }
-
-      const moderators = getModeratorIds();
-
-      if (moderators.length === 0) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} No bot moderators are configured.`,
-          flags: MessageFlags.Ephemeral
-        });
-        return;
-      }
-
-      const reasonInput = new TextInputBuilder()
-        .setCustomId('confession-report-reason')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true)
-        .setMaxLength(1_000);
-
-      const reasonLabel = new LabelBuilder().setLabel('Reason').setTextInputComponent(reasonInput);
-
-      const modal = new ModalBuilder()
-        .setCustomId(`report-confession-modal:${parsed.messageId}`)
-        .setTitle('Report Confession')
-        .addLabelComponents(reasonLabel);
-
-      await interaction.showModal(modal);
-
-      let modalSubmit;
-
-      try {
-        modalSubmit = await interaction.awaitModalSubmit({
-          filter: (modalInteraction) =>
-            modalInteraction.customId === `report-confession-modal:${parsed.messageId}` &&
-            modalInteraction.user.id === interaction.user.id,
-          time: 60_000
-        });
-      } catch {
-        return;
-      }
-
-      const reason = modalSubmit.fields.getTextInputValue('confession-report-reason');
-      await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
-      let channel = null;
-
-      try {
-        if (interaction.inGuild() && interaction.guild) {
-          channel = await interaction.guild.channels.fetch(context.channelId).catch(() => null);
-        } else {
-          channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
-        }
-      } catch (err) {
-        channel = null;
-      }
-
-      if (!channel || !channel.isTextBased()) {
-        console.error('Confession channel fetch failed', { channelId: context.channelId, context });
-        await modalSubmit.editReply({
-          content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available.`
-        });
-        return;
-      }
-
-      const message = await channel.messages.fetch(context.messageId).catch(() => null);
-
-      if (!message) {
-        await modalSubmit.editReply({
-          content: `${emojis.rightArrow2} That confession no longer exists.`
-        });
-        return;
-      }
-
-      const deleteButton = new ButtonBuilder()
-        .setCustomId(`delete-confession:${context.guildId}:${context.channelId}:${context.messageId}`)
-        .setLabel('Delete Confession')
-        .setStyle(ButtonStyle.Danger);
-
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(deleteButton);
-      const confessionText = message.embeds[0]?.description ?? 'No confession content was found.';
-      const link = buildConfessionLink(context.guildId, context.channelId, context.messageId);
-
-      const reportEmbed = new EmbedBuilder()
-        .setTitle('Confession Reported')
-        .addFields(
-          { name: 'Guild', value: `${interaction.guild.name} (${interaction.guild.id})` },
-          { name: 'Channel', value: `<#${context.channelId}>` },
-          { name: 'Reported by', value: `${modalSubmit.user.tag} (${modalSubmit.user.id})` },
-          { name: 'Reason', value: reason },
-          { name: 'Confession', value: confessionText.slice(0, 1024) },
-          { name: 'Link', value: link }
-        )
-        .setTimestamp();
-
-      const deliveries = await Promise.allSettled(
-        moderators.map(async (moderatorId) => {
-          const user = await interaction.client.users.fetch(moderatorId);
-          await user.send({ embeds: [reportEmbed], components: [row] });
-        })
-      );
-
-      const delivered = deliveries.some((result) => result.status === 'fulfilled');
-
-      if (!delivered) {
-        await modalSubmit.editReply({
-          content: `${emojis.rightArrow2} I could not contact any configured moderators.`,
-        });
-        return;
-      }
-
-      await modalSubmit.editReply({
-        content: `${emojis.rightArrow2} Your report was sent to the bot moderators.`,
+    if (!context) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} This confession is no longer available.`,
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
 
-    if (parsed.action === 'delete-confession') {
-      if (interaction.inGuild() || !parsed.messageId) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} This action can only be used from a moderator DM.`
-        });
-        return;
-      }
+    const moderators = getModeratorIds();
 
-      const context =
-        parsed.guildId && parsed.channelId && parsed.messageId
-          ? {
-              guildId: parsed.guildId,
-              channelId: parsed.channelId,
-              messageId: parsed.messageId,
-              threadId: ''
-            }
-          : await getConfessionContext(parsed.messageId);
+    if (moderators.length === 0) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} No bot moderators are configured.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
 
-      if (!context) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} This confession is no longer available.`
-        });
-        return;
-      }
+    const modal = createTextInputModal(
+      `report-confession-modal:${parsed.messageId}`,
+      'Report Confession',
+      'confession-report-reason',
+      'Reason'
+    );
 
-      const moderatorIds = getModeratorIds();
+    await interaction.showModal(modal);
 
-      if (!moderatorIds.includes(interaction.user.id)) {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} You are not configured as a bot moderator.`
-        });
-        return;
-      }
+    let modalSubmit;
 
-      let channel = null;
+    try {
+      modalSubmit = await interaction.awaitModalSubmit({
+        filter: (modal) =>
+          modal.customId === `report-confession-modal:${parsed.messageId}` && modal.user.id === interaction.user.id,
+        time: 60_000
+      });
+    } catch {
+      return;
+    }
 
-      try {
-        if (interaction.inGuild() && interaction.guild) {
-          channel = await interaction.guild.channels.fetch(context.channelId).catch(() => null);
-        } else {
-          const guild = await interaction.client.guilds.fetch(context.guildId).catch(() => null);
-          if (guild) {
-            channel = await guild.channels.fetch(context.channelId).catch(() => null);
-          }
-          if (!channel) {
-            channel = await interaction.client.channels.fetch(context.channelId).catch(() => null);
-          }
-        }
-      } catch (err) {
-        channel = null;
-      }
+    const reason = modalSubmit.fields.getTextInputValue('confession-report-reason');
+    await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
 
-      if (!channel || !channel.isTextBased()) {
-        console.error('Confession channel fetch failed (delete flow)', { 
-          channelId: context.channelId, 
-          guildId: context.guildId,
-          context 
-        });
-        
-        // Still allow removal from database if channel is gone
-        await removeConfessionContext(context.messageId);
-        
-        await interaction.reply({
-          content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available, but the confession has been removed from records.`
-        });
-        return;
-      }
+    const channel = await fetchConfessionChannel(interaction, context.channelId);
 
-      const message = await channel.messages.fetch(context.messageId).catch(() => null);
+    if (!channel) {
+      console.error('Confession channel fetch failed', { channelId: context.channelId, context });
+      await modalSubmit.editReply({
+        content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available.`
+      });
+      return;
+    }
 
-      if (!message) {
-        // Message was already deleted, just clean up the record
-        await removeConfessionContext(context.messageId);
-        
-        await interaction.reply({
-          content: `${emojis.rightArrow2} That confession no longer exists, but the record has been cleaned up.`
-        });
-        return;
-      }
+    const message = await channel.messages.fetch(context.messageId).catch(() => null);
 
-      const deletedEmbed = new EmbedBuilder()
-        .setTitle('Confession')
-        .setDescription('This confession was deleted by moderators.')
-        .setColor(0xed4245)
-        .setTimestamp();
+    if (!message) {
+      await modalSubmit.editReply({
+        content: `${emojis.rightArrow2} That confession no longer exists.`
+      });
+      return;
+    }
 
-      try {
-        await message.edit({ embeds: [deletedEmbed], components: [] });
-      } catch {
-        await interaction.reply({
-          content: `${emojis.rightArrow2} I could not update the confession message.`
-        });
-        return;
-      }
+    const deleteButton = new ButtonBuilder()
+      .setCustomId(`delete-confession:${context.guildId}:${context.channelId}:${context.messageId}`)
+      .setLabel('Delete Confession')
+      .setStyle(ButtonStyle.Danger);
+
+    const confessionText = message.embeds[0]?.description ?? 'No confession content was found.';
+    const link = buildConfessionLink(context.guildId, context.channelId, context.messageId);
+
+    const reportEmbed = new EmbedBuilder()
+      .setTitle('Confession Reported')
+      .addFields(
+        { name: 'Guild', value: `${interaction.guild.name} (${interaction.guild.id})` },
+        { name: 'Channel', value: `<#${context.channelId}>` },
+        { name: 'Reported by', value: `${modalSubmit.user.tag} (${modalSubmit.user.id})` },
+        { name: 'Reason', value: reason },
+        { name: 'Confession', value: confessionText.slice(0, 1024) },
+        { name: 'Link', value: link }
+      )
+      .setTimestamp();
+
+    const deliveries = await Promise.allSettled(
+      moderators.map((moderatorId) => this.sendReportToModerator(interaction, moderatorId, reportEmbed, deleteButton))
+    );
+
+    const delivered = deliveries.some((result) => result.status === 'fulfilled');
+
+    if (!delivered) {
+      await modalSubmit.editReply({
+        content: `${emojis.rightArrow2} I could not contact any configured moderators.`
+      });
+      return;
+    }
+
+    await modalSubmit.editReply({
+      content: `${emojis.rightArrow1} Your report was sent to the bot moderators.`
+    });
+  }
+
+  private async sendReportToModerator(
+    interaction: ButtonInteraction,
+    moderatorId: string,
+    reportEmbed: EmbedBuilder,
+    deleteButton: ButtonBuilder
+  ) {
+    const user = await interaction.client.users.fetch(moderatorId);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(deleteButton);
+    await user.send({ embeds: [reportEmbed], components: [row] });
+  }
+
+  private async handleDeleteConfession(interaction: ButtonInteraction, parsed: ParsedConfessionButton) {
+    if (interaction.inGuild() || !parsed.messageId) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} This action can only be used from a moderator DM.`
+      });
+      return;
+    }
+
+    const context =
+      parsed.guildId && parsed.channelId && parsed.messageId
+        ? { guildId: parsed.guildId, channelId: parsed.channelId, messageId: parsed.messageId, threadId: '' }
+        : await getConfessionContext(parsed.messageId);
+
+    if (!context) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} This confession is no longer available.`
+      });
+      return;
+    }
+
+    const moderatorIds = getModeratorIds();
+
+    if (!moderatorIds.includes(interaction.user.id)) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} You are not configured as a bot moderator.`
+      });
+      return;
+    }
+
+    const channel = await fetchConfessionChannel(interaction, context.channelId);
+
+    if (!channel) {
+      console.error('Confession channel fetch failed (delete flow)', {
+        channelId: context.channelId,
+        guildId: context.guildId,
+        context
+      });
 
       await removeConfessionContext(context.messageId);
 
       await interaction.reply({
-        content: `${emojis.rightArrow2} Confession marked as deleted.`
+        content: `${emojis.rightArrow2} The confession channel (<#${context.channelId}>) is no longer available, but the confession has been removed from records.`
       });
+      return;
     }
+
+    const message = await channel.messages.fetch(context.messageId).catch(() => null);
+
+    if (!message) {
+      await removeConfessionContext(context.messageId);
+
+      await interaction.reply({
+        content: `${emojis.rightArrow2} That confession no longer exists, but the record has been cleaned up.`
+      });
+      return;
+    }
+
+    const deletedEmbed = new EmbedBuilder()
+      .setTitle('Confession')
+      .setDescription('This confession was deleted by global moderators.')
+      .setColor(0xed4245)
+      .setTimestamp();
+
+    try {
+      await message.edit({ embeds: [deletedEmbed], components: [] });
+    } catch {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} I could not update the confession message.`
+      });
+      return;
+    }
+
+    await removeConfessionContext(context.messageId);
+
+    await interaction.reply({
+      content: `${emojis.rightArrow1} Confession marked as deleted.`
+    });
   }
 }
