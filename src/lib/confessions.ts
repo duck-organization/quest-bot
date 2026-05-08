@@ -52,3 +52,9 @@ export async function removeConfessionContexts(messageIds: string[]) {
         },
     });
 }
+
+export async function removeConfessionContextsByChannel(channelId: string) {
+    await prisma.confession.deleteMany({
+        where: { channelId },
+    });
+}
