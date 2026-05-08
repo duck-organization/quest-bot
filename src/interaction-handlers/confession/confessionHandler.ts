@@ -8,7 +8,6 @@ import {
   MessageFlags,
   ModalBuilder,
   TextChannel,
-  ThreadChannel,
   TextInputBuilder,
   TextInputStyle,
   type ButtonInteraction,
