@@ -1,0 +1,12 @@
+
+
+> @quest/bot@0.1.0 build /Users/ash/Documents/Repositories/quest-bot/apps/bot
+> rimraf dist && prisma generate && tsc
+
+[2mLoaded Prisma config from prisma.config.ts.
+[22m
+[2mPrisma schema loaded from prisma/schema.prisma.[22m
+
+
+✔ Generated [1mPrisma Client[22m (7.7.0)[2m to ./src/generated/prisma[22m in 43ms
+
