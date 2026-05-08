@@ -360,7 +360,6 @@ export class ConfessionButtonHandler extends InteractionHandler {
       const message = await channel.messages.fetch(context.messageId).catch(() => null);
 
       if (!message) {
-        // Message was already deleted, just clean up the record
         await removeConfessionContext(context.messageId);
         
         await interaction.reply({
