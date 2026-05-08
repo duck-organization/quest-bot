@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { AuditLogEvent, Colors, EmbedBuilder, Events, type Channel } from 'discord.js';
+import { AuditLogEvent, Colors, EmbedBuilder, Events, type APIEmbedField, type Channel } from 'discord.js';
 import { removeConfessionContextsByChannel } from '#lib/confessions.js';
 import { getRecentAuditLogEntry, isLoggingChannel, logEmbed } from '#lib/logging.js';
 
@@ -20,20 +20,21 @@ export class ChannelDeleteListener extends Listener<typeof Events.ChannelDelete>
 
     const channelLabel = channel.toString() || 'Unknown';
     const typeLabel = String(channel.type);
+    const fields: APIEmbedField[] = [
+      { name: 'Channel', value: `${channelLabel} (${channel.id})`, inline: true },
+      { name: 'Type', value: typeLabel, inline: true }
+    ];
 
     const embed = new EmbedBuilder()
       .setTitle('Channel Deleted')
       .setColor(Colors.Red)
-      .addFields(
-        { name: 'Channel', value: `${channelLabel}`, inline: true },
-        { name: 'Type', value: typeLabel, inline: true }
-      )
+      .addFields(fields)
       .setTimestamp();
 
     const auditEntry = await getRecentAuditLogEntry(channel.guild, AuditLogEvent.ChannelDelete, channel.id);
 
     if (auditEntry?.executor) {
-      const moderatorLabel = auditEntry.executor.tag ?? auditEntry.executor.username ?? auditEntry.executor.id;
+      const moderatorLabel = String(auditEntry.executor.tag ?? auditEntry.executor.username ?? auditEntry.executor.id);
       embed.addFields({ name: 'Moderator', value: moderatorLabel, inline: true });
     }
 
