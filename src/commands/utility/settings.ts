@@ -116,11 +116,9 @@ function buildTicketPanel(settings: ServerSettings, guild: Guild, status?: strin
       : `${emojis.rightArrow1} **Tickets** module:`,
     components: [
       new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(categoryMenu),
-      new ActionRowBuilder<ButtonBuilder>().addComponents(removeButton),
       new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(staffRole),
-      new ActionRowBuilder<ButtonBuilder>().addComponents(removeStaffRoleButton),
       new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(ticketTranscriptChannel),
-      new ActionRowBuilder<ButtonBuilder>().addComponents(removeTranscriptChannelButton)
+      new ActionRowBuilder<ButtonBuilder>().addComponents(removeButton, removeStaffRoleButton, removeTranscriptChannelButton)
     ]
   };
 }
