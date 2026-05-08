@@ -94,6 +94,21 @@ function buildTicketPanel(settings: ServerSettings, guild: Guild, status?: strin
     .setLabel('Remove Staff Role')
     .setStyle(ButtonStyle.Danger)
     .setDisabled(!settings.staffRole);
+  
+  const currentTranscriptChannelName = settings.ticketTranscriptChannelId
+    ? guild.channels.cache.get(settings.ticketTranscriptChannelId)?.name
+    : null;
+  
+  const ticketTranscriptChannel = new ChannelSelectMenuBuilder()
+    .setCustomId('ticketTranscriptChannel')
+    .setPlaceholder(currentTranscriptChannelName ? `#${currentTranscriptChannelName}` : 'Select a channel for ticket transcripts')
+    .setChannelTypes(ChannelType.GuildText);
+  
+  const removeTranscriptChannelButton = new ButtonBuilder()
+    .setCustomId('removeTranscriptChannel')
+    .setLabel('Remove Transcript Channel')
+    .setStyle(ButtonStyle.Danger)
+    .setDisabled(!settings.ticketTranscriptChannelId);
 
   return {
     content: status
@@ -103,7 +118,9 @@ function buildTicketPanel(settings: ServerSettings, guild: Guild, status?: strin
       new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(categoryMenu),
       new ActionRowBuilder<ButtonBuilder>().addComponents(removeButton),
       new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(staffRole),
-      new ActionRowBuilder<ButtonBuilder>().addComponents(removeStaffRoleButton)
+      new ActionRowBuilder<ButtonBuilder>().addComponents(removeStaffRoleButton),
+      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(ticketTranscriptChannel),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(removeTranscriptChannelButton)
     ]
   };
 }
@@ -331,6 +348,15 @@ export class SettingsCommand extends Command {
           const next = await updateSettings(guildId, guild.name, { staffRole: null });
 
           await i.update(buildTicketPanel(next, guild, 'Ticket staff role removed.'));
+        } else if (i.customId === 'ticketTranscriptChannel' && i.isChannelSelectMenu()) {
+          const channelId = i.values[0];
+          const next = await updateSettings(guildId, guild.name, { ticketTranscriptChannelId: channelId });
+
+          await i.update(buildTicketPanel(next, guild, `Ticket transcript channel set to <#${channelId}>.`));
+        } else if (i.customId === 'removeTranscriptChannel' && i.isButton()) {
+          const next = await updateSettings(guildId, guild.name, { ticketTranscriptChannelId: null });
+
+          await i.update(buildTicketPanel(next, guild, 'Ticket transcript channel removed.'));
         } else if (i.customId === 'loggingToggle' && i.isStringSelectMenu()) {
           const enable = i.values[0] === 'enable';
           const next = await updateSettings(guildId, guild.name, { loggingEnabled: enable });

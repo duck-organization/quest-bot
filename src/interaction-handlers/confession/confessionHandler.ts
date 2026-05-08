@@ -377,7 +377,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
 
     const deletedEmbed = new EmbedBuilder()
       .setTitle('Confession')
-      .setDescription('This confession was deleted by moderators.')
+      .setDescription('This confession was deleted by global moderators.')
       .setColor(0xed4245)
       .setTimestamp();
 
