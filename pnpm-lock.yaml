@@ -8,6 +8,16 @@ importers:
 
   .:
     dependencies:
+      discord.js:
+        specifier: ^14.26.3
+        version: 14.26.3
+    devDependencies:
+      turbo:
+        specifier: ^2.9.10
+        version: 2.9.10
+
+  apps/bot:
+    dependencies:
       '@discordjs/core':
         specifier: ^2.3.0
         version: 2.4.0
@@ -633,6 +643,36 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
+
+  '@turbo/darwin-64@2.9.10':
+    resolution: {integrity: sha512-5BVJnes8/zMPydF8ktfBBWqCCpUeWVxwZ6avYHRqLzk2PuTAsLz0TlaKdDe1nk1cz3/o0c+7CEf6zqNXdB2N7Q==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@turbo/darwin-arm64@2.9.10':
+    resolution: {integrity: sha512-MwaJl+vsxlkkDJYWN87GWKYD64kOvZFFlrDtGmCDeEx/488Kola5TVgS0VQkEUwnbDPjaDIB7kBMIzdzJRElbg==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@turbo/linux-64@2.9.10':
+    resolution: {integrity: sha512-HWrCKR+kUicEf4awj1EVRh5LI2hiDncpWZSXqhVj+wQT3SolBSXqXiSPYHgdh6hkmyfvz75Ex/+axXGcgQGdeA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@turbo/linux-arm64@2.9.10':
+    resolution: {integrity: sha512-edJINoZcDn4g1zkOZHFrGtLX0EWTryoNJSlZK5SEVux4hITT6hTCzugVGtOUmdI+PuJ/xRRL3jKGa+JgjSoq5A==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@turbo/windows-64@2.9.10':
+    resolution: {integrity: sha512-rkASn89ATUtSyKvhGaWSyqVHBwtqFEUV1rFNKCtthSoix0T/kUHLJDKpepE/Wh6CtSnhxAfsY8cODtevD/hR7A==}
+    cpu: [x64]
+    os: [win32]
+
+  '@turbo/windows-arm64@2.9.10':
+    resolution: {integrity: sha512-cblXqub7uABXKNMzvPB1IyOuSQpeMo7zZHSREB2C0mtIVn4lUSd2CfaGBtOrDqmkC9dsan3itxY4IejChQvfpg==}
+    cpu: [arm64]
+    os: [win32]
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -3109,6 +3149,10 @@ packages:
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
 
+  turbo@2.9.10:
+    resolution: {integrity: sha512-YBLeNT0wLoysGgQEkvBWE2GA1liGGZ1j13wa7xHTwELJx4ZhM+c2szeXj6wUOUGO86BmyhY0Q/ELWwU3WDXzZA==}
+    hasBin: true
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -4051,6 +4095,24 @@ snapshots:
       espree: 10.4.0
       estraverse: 5.3.0
       picomatch: 4.0.4
+
+  '@turbo/darwin-64@2.9.10':
+    optional: true
+
+  '@turbo/darwin-arm64@2.9.10':
+    optional: true
+
+  '@turbo/linux-64@2.9.10':
+    optional: true
+
+  '@turbo/linux-arm64@2.9.10':
+    optional: true
+
+  '@turbo/windows-64@2.9.10':
+    optional: true
+
+  '@turbo/windows-arm64@2.9.10':
+    optional: true
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
@@ -7015,6 +7077,15 @@ snapshots:
     dependencies:
       tslib: 1.14.1
       typescript: 5.9.3
+
+  turbo@2.9.10:
+    optionalDependencies:
+      '@turbo/darwin-64': 2.9.10
+      '@turbo/darwin-arm64': 2.9.10
+      '@turbo/linux-64': 2.9.10
+      '@turbo/linux-arm64': 2.9.10
+      '@turbo/windows-64': 2.9.10
+      '@turbo/windows-arm64': 2.9.10
 
   type-check@0.4.0:
     dependencies:
