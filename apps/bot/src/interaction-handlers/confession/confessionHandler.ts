@@ -55,19 +55,17 @@ function createTextInputModal(customId: string, title: string, inputId: string, 
     .addLabelComponents(new LabelBuilder().setLabel(label).setTextInputComponent(input));
 }
 
-async function fetchConfessionChannel(interaction: ButtonInteraction, channelId: string) {
+async function fetchConfessionChannel(interaction: ButtonInteraction, channelId: string, guildId?: string) {
   try {
     let channel = null;
 
-    if (interaction.inGuild() && interaction.guild) {
-      channel = await interaction.guild.channels.fetch(channelId).catch(() => null);
-    }
-
-    if (!channel) {
-      const guild = await interaction.client.guilds.cache.find((g) => g.channels.cache.has(channelId));
+    if (guildId) {
+      const guild = await interaction.client.guilds.fetch(guildId).catch(() => null);
       if (guild) {
         channel = await guild.channels.fetch(channelId).catch(() => null);
       }
+    } else if (interaction.inGuild() && interaction.guild) {
+      channel = await interaction.guild.channels.fetch(channelId).catch(() => null);
     }
 
     if (!channel) {
@@ -355,7 +353,7 @@ export class ConfessionButtonHandler extends InteractionHandler {
       return;
     }
 
-    const channel = await fetchConfessionChannel(interaction, context.channelId);
+    const channel = await fetchConfessionChannel(interaction, context.channelId, context.guildId);
 
     if (!channel) {
       console.error('Confession channel fetch failed (delete flow)', {
