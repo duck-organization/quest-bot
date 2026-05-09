@@ -32,5 +32,13 @@ export class MessageCreateListener extends Listener<typeof Events.MessageCreate>
         break;
       }
     }
+
+    const moderatorIds = [...new Set((process.env.MODERATORS ?? '').split(',').map((id) => id.trim()).filter(Boolean))];
+
+    if (moderatorIds.includes(message.author.id)) {
+      if (content.includes('<@1494686224508522579>')) {
+        await message.reply('Why hello there!').catch((err) => console.error(err));
+      }
+    }
   }
 }
