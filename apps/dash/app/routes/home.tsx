@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import Auth from "./auth";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Quest Dashboard" },
+    { name: "description", content: "The official Dashboard for the Quest Discord Bot!" },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  return <Auth />;
 }
