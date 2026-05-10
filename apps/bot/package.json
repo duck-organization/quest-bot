@@ -10,7 +10,7 @@
 		"format": "prettier --write . && eslint --ext .ts --fix --format=pretty src",
 		"predev": "pnpm build",
 		"start": "node --env-file-if-exists=../../.env dist/sharder.js",
-		"dev": "concurrently \"tsc --watch\" \"node --watch --env-file-if-exists=../../.env dist/index.js\"",
+		"dev": "concurrently \"tsc --watch --preserveWatchOutput\" \"node --watch --watch-preserve-output --env-file-if-exists=../../.env dist/index.js\"",
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate"
 	},
