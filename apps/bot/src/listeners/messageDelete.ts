@@ -19,7 +19,7 @@ export class MessageDeleteListener extends Listener<typeof Events.MessageDelete>
       .addFields(
         { name: 'Channel', value: message.channel?.toString() ?? 'Unknown', inline: true },
         { name: 'Author', value: message.author?.tag ?? 'Unknown', inline: true },
-        { name: 'Content', value: truncate(message instanceof Object ? (message as Message).content : undefined) || '-' }
+        { name: 'Content', value: truncate(message instanceof Object ? (message as Message).content : undefined, 1024) || '-' }
       )
       .setFooter({ text: `ID: ${message.id}` })
       .setTimestamp();

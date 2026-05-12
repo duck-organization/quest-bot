@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework';
 import { emojis } from '#utils/emoji.js';
-import { MessageFlags } from 'discord.js';
+import { EmbedBuilder, MessageFlags } from 'discord.js';
 
 export class HelpCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -26,9 +26,14 @@ export class HelpCommand extends Command {
         })
         .join('\n');
 
+    const embed = new EmbedBuilder()
+      .setTitle('Commands')
+      .setDescription(commandList)
+      .addFields({ name: 'Links', value: '**Status:** https://status.questfoundation.dev/\n**Official Discord Server:** https://discord.gg/F4HYE8frK2\n**Documentation:** https://docs.questfoundation.dev/' });
+
     await interaction.reply({
-        content: commandList + `\n\n**Status:** https://status.questfoundation.dev/\n**Official Discord Server:** https://discord.gg/F4HYE8frK2\n**Documentation:** https://docs.questfoundation.dev/`,
-        flags: MessageFlags.SuppressEmbeds | MessageFlags.Ephemeral
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral
     });
   }
 }
