@@ -13,6 +13,6 @@ export class InviteCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    await interaction.reply(`${emojis.rightArrow1} https://questfoundation.dev/bot/invite`);
+    await interaction.reply(`${emojis.rightArrow1} https://duckorg.com/bot/invite`);
   }
 }
