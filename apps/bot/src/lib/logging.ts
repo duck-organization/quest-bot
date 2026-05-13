@@ -28,7 +28,7 @@ export async function isLoggingChannel(guild: Guild, channelId: string | null | 
 
 export async function getRecentAuditLogEntry(guild: Guild, type: AuditLogEvent, targetId: string) {
   const auditLogs = await guild.fetchAuditLogs({ type, limit: 5 }).catch((err) => {
-    console.error(err);
+    if (err?.code !== 10004) console.error(err);
     return null;
   });
 

@@ -1,0 +1,85 @@
+import { Command } from '@sapphire/framework';
+import { GuildMember, MessageFlags, PermissionsBitField } from 'discord.js';
+import { emojis } from '#utils/emoji.js';
+
+export class NickCommand extends Command {
+  public constructor(context: Command.LoaderContext, options: Command.Options) {
+    super(context, { ...options });
+  }
+
+  public override registerApplicationCommands(registry: Command.Registry) {
+    registry.registerChatInputCommand((builder: any) =>
+      builder
+        .setName('nick')
+        .setDescription("Change a member's nickname.")
+        .addUserOption((option: any) =>
+          option.setName('member').setDescription('Select a member to change their nickname').setRequired(true)
+        )
+        .addStringOption((option: any) =>
+          option.setName('nickname').setDescription('Nickname (leave empty to reset)')
+        )
+    );
+  }
+
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+    if (!interaction.inCachedGuild()) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} This command can only be used in a server.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    const member = interaction.member as GuildMember;
+
+    if (!member.permissions.has(PermissionsBitField.Flags.ManageNicknames)) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} You do not have permission to manage nicknames.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    const targetMember = interaction.options.getMember('member');
+    const nickname = interaction.options.getString('nickname') ?? null;
+
+    if (!targetMember) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} That user is not in this server.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    if (targetMember.id === interaction.guild.ownerId) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} You cannot change the server owner's nickname.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    if (!targetMember.manageable) {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} I cannot manage this member's nickname.`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    try {
+      await targetMember.setNickname(nickname);
+      await interaction.reply({
+        content: nickname
+          ? `${emojis.rightArrow2} Set <@${targetMember.user.id}>'s nickname to **${nickname}**.`
+          : `${emojis.rightArrow2} Reseted <@${targetMember.user.id}>'s nickname.`,
+        flags: MessageFlags.Ephemeral
+      });
+    } catch {
+      await interaction.reply({
+        content: `${emojis.rightArrow2} Failed to update <@${targetMember.user.id}>'s nickname.`,
+        flags: MessageFlags.Ephemeral
+      });
+    }
+  }
+}
