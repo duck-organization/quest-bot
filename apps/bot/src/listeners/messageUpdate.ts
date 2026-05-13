@@ -25,8 +25,8 @@ export class MessageUpdateListener extends Listener {
       .addFields(
         { name: 'Channel', value: newMsg.channel?.toString() ?? 'Unknown', inline: true },
         { name: 'Author', value: newMsg.author?.tag ?? oldMsg?.author?.tag ?? 'Unknown', inline: true },
-        { name: 'Before', value: truncate(oldMsg?.content, 1024) || '-' },
-        { name: 'After', value: truncate(newMsg.content, 1024) || '-' }
+        { name: 'Before', value: truncate(oldMsg?.content, 1023) || '-' },
+        { name: 'After', value: truncate(newMsg.content, 1023) || '-' }
       )
       .setFooter({ text: `ID: ${newMsg.id}` })
       .setTimestamp();
