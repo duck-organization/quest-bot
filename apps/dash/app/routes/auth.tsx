@@ -26,7 +26,7 @@ export default function Auth() {
         <p className="mt-2 text-sm text-gray-500 text-center">Sign in to continue</p>
       </div>
       <p className="fixed bottom-3 left-0 right-0 text-center text-gray-400 font-['Inter'] text-sm font-light leading-normal">
-        Powered by Quest
+        Powered by <a href="https://duckorg.com/" target="_blank" rel="noreferrer" className="underline hover:text-gray-600">Duck Organization</a>
       </p>
     </main>
   );
