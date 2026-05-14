@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { EmbedBuilder, Colors, type Collection } from 'discord.js';
+import { EmbedBuilder, type Collection } from 'discord.js';
 import { removeConfessionContexts } from '#lib/confessions.js';
 import { isLoggingChannel, logEmbed } from '#lib/logging.js';
 
@@ -18,7 +18,7 @@ export class MessageDeleteBulkListener extends Listener {
 
     const embed = new EmbedBuilder()
       .setTitle('Bulk Messages Deleted')
-      .setColor(Colors.Red)
+      .setColor(0xFF6962)
       .addFields(
         { name: 'Channel', value: channel, inline: true },
         { name: 'Count', value: `${messages.size}`, inline: true }

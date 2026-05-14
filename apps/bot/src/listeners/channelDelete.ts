@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { AuditLogEvent, Colors, EmbedBuilder, Events, type APIEmbedField, type Channel } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, type APIEmbedField, type Channel } from 'discord.js';
 import { removeConfessionContextsByChannel } from '#lib/confessions.js';
 import { getRecentAuditLogEntry, isLoggingChannel, logEmbed } from '#lib/logging.js';
 
@@ -27,7 +27,7 @@ export class ChannelDeleteListener extends Listener<typeof Events.ChannelDelete>
 
     const embed = new EmbedBuilder()
       .setTitle('Channel Deleted')
-      .setColor(Colors.Red)
+      .setColor(0xFF6962)
       .addFields(fields)
       .setTimestamp();
 

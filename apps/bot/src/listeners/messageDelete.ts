@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { Events, EmbedBuilder, Colors, type Message, type PartialMessage } from 'discord.js';
+import { Events, EmbedBuilder, type Message, type PartialMessage } from 'discord.js';
 import { removeConfessionContext } from '#lib/confessions.js';
 import { isLoggingChannel, logEmbed, truncate } from '#lib/logging.js';
 
@@ -15,7 +15,7 @@ export class MessageDeleteListener extends Listener<typeof Events.MessageDelete>
 
     const embed = new EmbedBuilder()
       .setTitle('Message Deleted')
-      .setColor(Colors.Red)
+      .setColor(0xFF6962)
       .addFields(
         { name: 'Channel', value: message.channel?.toString() ?? 'Unknown', inline: true },
         { name: 'Author', value: message.author?.tag ?? 'Unknown', inline: true },

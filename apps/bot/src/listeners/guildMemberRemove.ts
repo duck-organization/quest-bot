@@ -18,7 +18,7 @@ export class GuildMemberRemoveListener extends Listener<typeof Events.GuildMembe
 
     const embed = new EmbedBuilder()
       .setTitle(kickEntry ? 'Member Kicked' : 'Member Left')
-      .setColor(kickEntry ? Colors.Red : Colors.Grey)
+      .setColor(kickEntry ? 0xFF6962 : Colors.Grey)
       .addFields(
         { name: 'Member', value: `${member.user.tag} (${member.id})`, inline: false },
         { name: 'Username', value: member.user.toString(), inline: true }
