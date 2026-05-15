@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { EmbedBuilder, Colors, type Message } from 'discord.js';
+import { EmbedBuilder, type Message } from 'discord.js';
 import { isLoggingChannel, logEmbed, truncate } from '#lib/logging.js';
 
 export class MessageUpdateListener extends Listener {
@@ -21,7 +21,7 @@ export class MessageUpdateListener extends Listener {
 
     const embed = new EmbedBuilder()
       .setTitle('Message Edited')
-      .setColor(Colors.Orange)
+      .setColor(0xFAC898)
       .addFields(
         { name: 'Channel', value: newMsg.channel?.toString() ?? 'Unknown', inline: true },
         { name: 'Author', value: newMsg.author?.tag ?? oldMsg?.author?.tag ?? 'Unknown', inline: true },
