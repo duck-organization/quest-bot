@@ -28,10 +28,6 @@ Quest is capable of:
 7. Run the development server with `pnpm dev`
 8. The bot will register commands automatically on startup.
 
-> [!IMPORTANT]
-> When testing, add the precondition, 'DevMode' and set 'DEV' to true in your env.
-> Any user that is not listed in 'DEVIDS' will not be able to run that command.
-
 ## AI declaration
 
 Claude (and sometimes ChatGPT) is used when I don’t know how to implement something or when something randomly breaks and I don't know how to fix it. Co-pilot is rarely used to make minimal automatic security fixes for common vulnerabilities.
