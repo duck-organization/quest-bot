@@ -210,7 +210,7 @@ async function normalizeTicketSettings(guildId: string, guild: Guild, settings: 
 
 export class SettingsCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options });
+    super(context, { ...options, preconditions: ['devMode'] });
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

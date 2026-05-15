@@ -9,7 +9,7 @@ const DEV_IDS = new Set(
 );
 const DEV_MODE = process.env['DEV'] === 'true';
 
-export class DevModePrecondition extends Precondition {
+export class devModePrecondition extends Precondition {
   public override chatInputRun(interaction: CommandInteraction) {
     return this.check(interaction.user.id);
   }
@@ -33,6 +33,6 @@ export class DevModePrecondition extends Precondition {
 
 declare module '@sapphire/framework' {
   interface Preconditions {
-    DevMode: never;
+    devMode: never;
   }
 }
