@@ -9,15 +9,22 @@ export function reminderScheduler(client: Client) {
             
             for (const reminder of due) {
                 try {
-                    if (reminder.channelId){
-                        const channel = await client.channels.fetch(reminder.channelId).catch(() => null);
-                        
+                    let sent = false;
+                    if (reminder.channelId) {
+                        const channel = await client.channels.fetch(reminder.channelId).catch((err) => {
+                            console.error(`[reminders] Failed to fetch channel ${reminder.channelId}:`, err);
+                            return null;
+                        });
                         if (channel?.isSendable()) {
                             await channel.send({
-                                content: `${emojis.rightArrow2} <@${reminder.userId}> reminder: ${reminder.message ?? 'No reason provided'}`,}
-                            );
+                                content: `${emojis.rightArrow2} <@${reminder.userId}> reminder: ${reminder.message ?? 'No message provided'}`,
+                            });
+                            sent = true;
+                        } else {
+                            console.warn(`[reminders] Channel ${reminder.channelId} unavailable/not sendable (type: ${channel?.type})`);
                         }
-                    } else {
+                    }
+                    if (!sent) {
                         await dmUser(client, reminder.userId, reminder.message);
                     }
                     
