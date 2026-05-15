@@ -16,13 +16,13 @@ export class ConfessionBlacklistCommand extends Command {
         registry.registerChatInputCommand((builder: any) =>
             builder
                 .setName('confessionblacklist')
-                .setDescription('Manage the confession blacklist.')
+                .setDescription('Manage the confession blacklist')
                 .setDefaultMemberPermissions(0n)
                 .setDMPermission(false)
                 .addSubcommand((sub: any) =>
                     sub
                         .setName('add')
-                        .setDescription('Blacklist a user from making confessions.')
+                        .setDescription('Blacklist a user from making confessions')
                         .addUserOption((opt: any) =>
                             opt.setName('user').setDescription('User to blacklist').setRequired(true)
                         )
@@ -33,7 +33,7 @@ export class ConfessionBlacklistCommand extends Command {
                 .addSubcommand((sub: any) =>
                     sub
                         .setName('remove')
-                        .setDescription('Remove a user from the confession blacklist.')
+                        .setDescription('Remove a user from the confession blacklist')
                         .addUserOption((opt: any) =>
                             opt.setName('user').setDescription('User to unblacklist').setRequired(true)
                         )
@@ -41,7 +41,7 @@ export class ConfessionBlacklistCommand extends Command {
                 .addSubcommand((sub: any) =>
                     sub
                         .setName('check')
-                        .setDescription('Check if a user is blacklisted from confessions.')
+                        .setDescription('Check if a user is blacklisted from confessions')
                         .addUserOption((opt: any) =>
                             opt.setName('user').setDescription('User to check').setRequired(true)
                         )
