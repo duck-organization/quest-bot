@@ -44,8 +44,9 @@ export class ConfessCommand extends Command {
       return;
     }
 
-    if (await isConfessionBlacklisted(interaction.user.id)) {
-      await interaction.reply({ content: `${emojis.rightArrow2} You are blacklisted from confessions.`, flags: MessageFlags.Ephemeral });
+    const blacklistEntry = await isConfessionBlacklisted(interaction.user.id);
+    if (blacklistEntry) {
+      await interaction.reply({ content: `${emojis.rightArrow2} You are blacklisted from confessions${blacklistEntry.reason ? ` reason: ${blacklistEntry.reason}` : ''}.`, flags: MessageFlags.Ephemeral });
       return;
     }
 

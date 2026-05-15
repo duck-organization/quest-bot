@@ -61,9 +61,8 @@ export async function removeConfessionContextsByChannel(channelId: string) {
     });
 }
 
-export async function isConfessionBlacklisted(userId: string): Promise<boolean> {
-    const entry = await prisma.confessionBlacklist.findUnique({ where: { userId } });
-    return entry !== null;
+export async function isConfessionBlacklisted(userId: string) {
+    return prisma.confessionBlacklist.findUnique({ where: { userId } });
 }
 
 export async function addConfessionBlacklist(userId: string, createdBy: string, reason?: string) {
