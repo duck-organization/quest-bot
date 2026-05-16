@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { Events, type Guild } from 'discord.js';
+import { EmbedBuilder, Events, type Guild } from 'discord.js';
 import { prisma } from '#lib/prisma.js';
 
 export class GuildDeleteListener extends Listener<typeof Events.GuildDelete> {
@@ -9,5 +9,15 @@ export class GuildDeleteListener extends Listener<typeof Events.GuildDelete> {
 
   public async run(guild: Guild) {
     await prisma.server.delete({ where: { id: guild.id } }).catch(() => null);
+
+    const owner = await guild.client.users.fetch(guild.ownerId).catch(() => null);
+    if (!owner) return;
+
+    const embed = new EmbedBuilder()
+      .setColor(0xffffff)
+      .setTitle('Sorry to see you go!')
+      .setDescription(`If you had any issues or feedback, feel free to join the support server by using the \`/discord\` command.\n\nWe'd also appreciate it if you could fill out our feedback form at https://duckorg.com/feedback/questbot.`);
+
+    await owner.send({ embeds: [embed] }).catch(() => null);
   }
 }
