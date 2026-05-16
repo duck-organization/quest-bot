@@ -48,4 +48,4 @@ This project is licensed under the Affero GNU General Public License v3.0 (AGPL-
 
 ## Contact
 
-If you have any questions or suggestions, feel free to reach out to us on our [Discord server](https://discord.gg/ksuqZ77R88) or send us an email at contact@duckorg.com
+If you have any questions or suggestions, feel free to reach out to us on our [Discord server](https://discord.gg/ksuqZ77R88) or send us an email at contact@duckorg.com.
