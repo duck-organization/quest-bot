@@ -1,9 +1,9 @@
 > [!NOTE]
 > Quest's Discord Bot is in active development, feel free to help and contribute to the project!
 
-# Quest Discord Bot
+# What is Quest Capable of?
 
-An opensource modern Discord Bot built for moderation, utilities and support!
+Quest is an opensource modern Discord Bot built for moderation, utilities and support!
 
 Quest is capable of:
 - All moderation commands such as: /ban, /kick, /mute & /warn.
@@ -11,6 +11,7 @@ Quest is capable of:
 - Utilties such as reminders.
 - Complete ticket system.
 - Welcoming new members.
+- Easy setup using /setup.
 - Fun stuff such as confessions!
 
 ## Links
@@ -23,10 +24,8 @@ Quest is capable of:
 2. Create a PostgreSQL database for this bot.
 3. Create a `.env` file based on `.env.example` and fill in the required values.
 4. Install dependencies with `pnpm install`
-5. Generate prisma using `pnpm prisma generate`
-6. Update your local databse using `pnpm prisma db push`
-7. Run the development server with `pnpm dev`
-8. The bot will register commands automatically on startup.
+5. Run the development server with `pnpm dev`
+6. The bot will register commands automatically on startup.
 
 ## AI declaration
 
