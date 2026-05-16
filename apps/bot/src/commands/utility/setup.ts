@@ -613,7 +613,7 @@ export class SetupCommand extends Command {
 
     await safeEditReply({
       content: [
-        `${emojis.rightArrow1} Here's what was configured:`,
+        `**Here's what was configured:**`,
         ...summary,
         '',
         `**What's next?**`,
