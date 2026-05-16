@@ -15,9 +15,4 @@ Please write in the commit message what you have changed.
 > [!NOTE]
 > When contributing to this project you agree that you have all rights to the content you have contributed and that these align with the projects license.
 
-
-## Team
-
-You will be invited to the Quest team if you have contributed a lot towards one or more Quest projects.
-
 ## Thanks!
