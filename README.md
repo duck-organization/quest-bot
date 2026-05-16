@@ -1,6 +1,6 @@
 <div style="text-align: center;">
 
-  <img src=".github/assets/LargeDuckBanner.png" alt="Duck Organization Banner" />
+  <img src=".github/assets/LargeDuckBannerWhite.png" alt="Duck Organization Banner" />
 
 ---
 
@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/Created_Using-Typescript-blue?style=for-the-badge" alt="Created Using Badge" />
 
 </div>
+
 
 > [!NOTE]
 > Quest's Discord Bot is in active development, feel free to help and contribute to the project!
