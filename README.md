@@ -1,11 +1,11 @@
 > [!NOTE]
 > Quest's Discord Bot is in active development, feel free to help and contribute to the project!
 
-# What is Quest Capable of?
+# What is Quest Bot Capable of?
 
-Quest is an opensource modern Discord Bot built for moderation, utilities and support!
+Quest Bot is an opensource modern Discord Bot built for moderation, utilities and support!
 
-Quest is capable of:
+Quest Bot is capable of:
 - All moderation commands such as: /ban, /kick, /mute & /warn.
 - Autoroles
 - Utilties such as reminders.
@@ -26,6 +26,13 @@ Quest is capable of:
 4. Install dependencies with `pnpm install`
 5. Run the development server with `pnpm dev`
 6. The bot will register commands automatically on startup.
+
+# Contributing
+
+Quest Bot is worked on by Duck Organization but we are opensource!
+Anyone can contribute!
+
+Open a pull request and follow the guidelines at [CONTRIBUTING.md](https://github.com/duck-organization/quest-bot/blob/main/CONTRIBUTING.md)
 
 ## AI declaration
 
