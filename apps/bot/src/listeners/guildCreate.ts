@@ -18,7 +18,7 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
     const embed = new EmbedBuilder()
       .setColor(0xffffff)
       .setTitle('Thanks for adding me!')
-      .setDescription(`I'm here to replace your other bot's and help improve your server!\nTo get started you can use the \`/setup\` command to help configure your server.\nIf you know how I work and want to configure me you can run \`/help\` for a list of all commands.\n\nIf you have any questions or need help, feel free to join the support server by using the \`/discord\` command.`);
+      .setDescription(`I'm here to replace your other bot's and help improve your server!\n\nTo get started you can use the \`/setup\` command to help configure your server.\nIf you know how I work and want to configure me you can run \`/help\` for a list of all commands.\n\nIf you have any questions or need help, feel free to join the support server by using the \`/discord\` command.`);
 
     await adder.send({ embeds: [embed] }).catch(() => null);
   }
