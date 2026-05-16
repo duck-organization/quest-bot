@@ -1,6 +1,6 @@
 <div style="text-align: center;">
 
-  <img src=".github/assets/LargeDuckBannerWhite.png" alt="Duck Organization Banner" />
+  <img src=".github/assets/LargeDuckBannerW.png" alt="Duck Organization Banner" />
 
 ---
 
@@ -8,10 +8,6 @@
   <img src="https://img.shields.io/badge/Created_Using-Typescript-blue?style=for-the-badge" alt="Created Using Badge" />
 
 </div>
-
-
-> [!NOTE]
-> Quest's Discord Bot is in active development, feel free to help and contribute to the project!
 
 # Features
 
@@ -46,7 +42,7 @@ Feel free to open a pull request! Just make sure to follow the guidelines at [CO
 
 This project is licensed under the Affero GNU General Public License v3.0 (AGPL-3.0). See LICENSE for more details.
 
-# Links
+## Links
 
 [Status Page](https://status.duckorg.com), [Bot Documentation](https://duckorg.com/bot/docs) & [Official Discord](https://discord.gg/ksuqZ77R88)
 

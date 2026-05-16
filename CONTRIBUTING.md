@@ -17,4 +17,4 @@ Format for commit messages, fix|upd|chore|dockerfile: (change made).
 > [!NOTE]
 > When contributing to this project you agree that you have all rights to the content you have contributed and that these align with the projects license.
 
-## Thanks for your interest!
+## Thanks for your interest! ❤️
