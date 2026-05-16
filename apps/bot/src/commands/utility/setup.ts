@@ -113,7 +113,8 @@ export class SetupCommand extends Command {
       content: [
         `**Server Setup**`,
         `${emojis.rightArrow1} This wizard will walk you through configuring the bot's features.`,
-        `${emojis.rightArrow1} You can adjust anything later with \`/settings\`.`
+        `${emojis.rightArrow1} You can adjust anything later with \`/settings\`.`,
+        `**Please put the newly created Quest role at the top of the role list!**`
       ].join('\n'),
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -615,7 +616,7 @@ export class SetupCommand extends Command {
         `${emojis.rightArrow1} Here's what was configured:`,
         ...summary,
         '',
-        `${emojis.rightArrow1} **What's next?**`,
+        `**What's next?**`,
         `${emojis.rightArrow1} Use \`/automod add\` to block words in your server.`,
         `${emojis.rightArrow1} Use \`/autorole add\` to assign roles to new members automatically.`,
         `${emojis.rightArrow1} Use \`/settings\` to adjust any of these at any time.`
