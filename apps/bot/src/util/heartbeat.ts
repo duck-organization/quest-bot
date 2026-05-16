@@ -1,24 +1,30 @@
 import type { Client } from 'discord.js';
 
 export function heartbeat(client: Client) {
-    const pushURLs = process.env['KUMA_PUSH_URL']?.split(',').map((url) => url.trim()).filter(Boolean) ?? [];
+    const pushURLs = process.env.KUMA_PUSH_URL?.split(',').map((u) => u.trim()).filter(Boolean) ?? [];
     const shardId = client.shard?.ids?.[0] ?? 0;
-    const pushURL = pushURLs[shardId] ?? pushURLs[0];
-
-    if (!pushURL) return;
+    const pushURL = pushURLs[shardId];
 
     const push = async () => {
         if (!client.isReady()) return;
 
         try {
             const url = new URL(pushURL);
-            url.searchParams.set('ping', String(client.ws.ping));
-            await fetch(url);
+            url.searchParams.set('ping', String(Math.max(0, client.ws.ping)));
+            url.searchParams.set('status', 'up');
+
+            const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+            if (!response.ok) {
+                console.error(`[heartbeat] Shard ${shardId} push failed: ${response.status}`);
+            }
         } catch (err) {
-            console.error('Push failed:', err);
+            console.error(`[heartbeat] Shard ${shardId} push error:`, err);
         }
     };
 
-    void push();
-    setInterval(push, 60_000);
+    const loop = async () => {
+        await push();
+        setTimeout(loop, 60_000);
+    };
+    void loop();
 }
