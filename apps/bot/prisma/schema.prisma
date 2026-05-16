@@ -142,3 +142,10 @@ model Confession {
   @@index([guildId])
   @@map("confessions")
 }
+
+model ConfessionBlacklist {
+  userId    String   @id
+  reason    String?
+  createdAt DateTime @default(now())
+  createdBy String
+}

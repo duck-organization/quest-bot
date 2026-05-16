@@ -3,7 +3,7 @@ import { emojis } from '#utils/emoji.js';
 
 export class UserCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options });
+    super(context, { ...options, preconditions: ['devMode'] });
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

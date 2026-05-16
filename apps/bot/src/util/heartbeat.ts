@@ -11,7 +11,9 @@ export function heartbeat(client: Client) {
         if (!client.isReady()) return;
 
         try {
-            await fetch(pushURL);
+            const url = new URL(pushURL);
+            url.searchParams.set('ping', String(client.ws.ping));
+            await fetch(url);
         } catch (err) {
             console.error('Push failed:', err);
         }

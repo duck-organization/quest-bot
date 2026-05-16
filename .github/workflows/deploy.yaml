@@ -34,11 +34,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Preset Image Name
-        run: |
-          SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
-          IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:$(echo ${SHA} | cut -c1-7)" | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE_URL=${IMAGE}" >> $GITHUB_ENV
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
 
       - name: Build and push Docker Image
         uses: docker/build-push-action@v7
@@ -46,14 +49,11 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ env.IMAGE_URL }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy Image to CapRover
-        uses: caprover/deploy-from-github@v1.1.2
-        with:
-          server: "${{ secrets.CAPROVER_URL }}"
-          app: "${{ secrets.CAPROVER_APP }}"
-          token: "${{ secrets.CAPROVER_APP_TOKEN }}"
-          image: ${{ env.IMAGE_URL }}
+      - name: Trigger Dokploy deploy
+        run: |
+          curl -fsSL -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}"

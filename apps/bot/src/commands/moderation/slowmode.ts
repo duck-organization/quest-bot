@@ -7,7 +7,7 @@ const MAX_SLOWMODE_SECONDS = 21_600;
 
 export class SlowmodeCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options });
+    super(context, { ...options, preconditions: ['devMode'] });
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {

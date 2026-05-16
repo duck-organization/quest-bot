@@ -12,12 +12,12 @@ import {
   TextChannel
 } from 'discord.js';
 import { getSettings } from '#lib/settings.js';
-import { storeConfessionContext } from '#lib/confessions.js';
+import { storeConfessionContext, isConfessionBlacklisted } from '#lib/confessions.js';
 import { emojis } from '#utils/emoji.js';
 
 export class ConfessCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options });
+    super(context, { ...options, preconditions: ['devMode'] });
   }
 
   public override registerApplicationCommands(_registry: Command.Registry) {
@@ -41,6 +41,12 @@ export class ConfessCommand extends Command {
 
     if (!settings.confessionChannelId) {
       await interaction.reply({ content: `${emojis.rightArrow2} Confessions are not configured in this server.`, flags: MessageFlags.Ephemeral });
+      return;
+    }
+
+    const blacklistEntry = await isConfessionBlacklisted(interaction.user.id);
+    if (blacklistEntry) {
+      await interaction.reply({ content: `${emojis.rightArrow2} You are blacklisted from confessions${blacklistEntry.reason ? ` reason: ${blacklistEntry.reason}` : ''}.`, flags: MessageFlags.Ephemeral });
       return;
     }
 

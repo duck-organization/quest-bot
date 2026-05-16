@@ -4,7 +4,7 @@ import { EmbedBuilder, MessageFlags } from 'discord.js';
 
 export class HelpCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options });
+    super(context, { ...options, preconditions: ['devMode'] });
   }
 
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -29,7 +29,7 @@ export class HelpCommand extends Command {
     const embed = new EmbedBuilder()
       .setTitle('Commands')
       .setDescription(commandList)
-      .addFields({ name: 'Links', value: '**Status:** https://status.questfoundation.dev/\n**Official Discord Server:** https://discord.gg/F4HYE8frK2\n**Documentation:** https://docs.questfoundation.dev/' });
+      .addFields({ name: 'Links', value: '**Status:** https://status.duckorg.com/\n**Official Discord Server:** https://discord.gg/F4HYE8frK2\n**Documentation:** https://docs.duckorg.com/' });
 
     await interaction.reply({
         embeds: [embed],

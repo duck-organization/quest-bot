@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { AuditLogEvent, Colors, EmbedBuilder, Events, type Channel } from 'discord.js';
+import { AuditLogEvent, EmbedBuilder, Events, type Channel } from 'discord.js';
 import { getRecentAuditLogEntry, isLoggingChannel, logEmbed } from '#lib/logging.js';
 
 export class ChannelCreateListener extends Listener<typeof Events.ChannelCreate> {
@@ -20,7 +20,7 @@ export class ChannelCreateListener extends Listener<typeof Events.ChannelCreate>
 
     const embed = new EmbedBuilder()
       .setTitle('Channel Created')
-      .setColor(Colors.Green)
+      .setColor(0x77DD76)
       .addFields(
         { name: 'Channel', value: `<#${channelId}>`, inline: true },
         { name: 'Type', value: typeLabel, inline: true }
