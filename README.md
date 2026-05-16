@@ -1,7 +1,18 @@
+<div style="text-align: center;">
+
+  <img src=".github/assets/LargeDuckBanner.png" alt="Duck Organization Banner" />
+
+---
+
+  <img src="https://img.shields.io/badge/Created_By_Duck_Organization-white?style=for-the-badge" alt="Created By Badge" />
+  <img src="https://img.shields.io/badge/Created_Using-Typescript-blue?style=for-the-badge" alt="Created Using Badge" />
+
+</div>
+
 > [!NOTE]
 > Quest's Discord Bot is in active development, feel free to help and contribute to the project!
 
-# What is Quest Bot Capable of?
+# Features
 
 Quest Bot is an opensource modern Discord Bot built for moderation, utilities and support!
 
@@ -14,9 +25,12 @@ Quest Bot is capable of:
 - Easy setup using /setup.
 - Fun stuff such as confessions!
 
-## Links
+# Contributing
 
-[Status Page](https://status.questfoundation.dev), [Bot Documentation](https://docs.questfoundation.dev/quest-bot) & [Official Discord](https://discord.gg/ksuqZ77R88)
+Quest Bot is worked on by Duck Organization but we are opensource!
+Anyone can contribute!
+
+Feel free to open a pull request! Just make sure to follow the guidelines at [CONTRIBUTING.md](https://github.com/duck-organization/quest-bot/blob/main/CONTRIBUTING.md).
 
 ## Running locally
 
@@ -27,13 +41,14 @@ Quest Bot is capable of:
 5. Run the development server with `pnpm dev`
 6. The bot will register commands automatically on startup.
 
-# Contributing
+# License
 
-Quest Bot is worked on by Duck Organization but we are opensource!
-Anyone can contribute!
+This project is licensed under the Affero GNU General Public License v3.0 (AGPL-3.0). See LICENSE for more details.
 
-Open a pull request and follow the guidelines at [CONTRIBUTING.md](https://github.com/duck-organization/quest-bot/blob/main/CONTRIBUTING.md)
+# Links
 
-## AI declaration
+[Status Page](https://status.duckorg.com), [Bot Documentation](https://duckorg.com/bot/docs) & [Official Discord](https://discord.gg/ksuqZ77R88)
 
-Claude (and sometimes ChatGPT) is used when I don’t know how to implement something or when something randomly breaks and I don't know how to fix it. Co-pilot is rarely used to make minimal automatic security fixes for common vulnerabilities.
+## Contact
+
+If you have any questions or suggestions, feel free to reach out to us on our [Discord server](https://discord.gg/ksuqZ77R88) or send us an email at contact@duckorg.com
