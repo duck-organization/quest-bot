@@ -1,5 +1,5 @@
 import { Command } from '@sapphire/framework';
-import { MessageFlags } from 'discord.js';
+import { MessageFlags, PermissionsBitField } from 'discord.js';
 import { createAutoRole, getAutoRole, getAutoRoles, removeAutoRole } from '#lib/autorole.js';
 import { getQuestUnlimitedPurchaseComponents, LimitError } from '#lib/limits.js';
 import { emojis } from '#utils/emoji.js';
@@ -66,6 +66,14 @@ export class AutoRoleCommand extends Command {
 		if (!interaction.inCachedGuild()) {
 			await interaction.reply({
 				content: `${emojis.rightArrow2} This command can only be used in a server.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
+
+		if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} You do not have permission to manage auto roles.`,
 				flags: MessageFlags.Ephemeral,
 			});
 			return;
