@@ -436,7 +436,7 @@ export class SetupCommand extends Command {
           await panelChoice.deferUpdate();
         }
       } else {
-        summary.push(`${emojis.rightArrow1} **Tickets** skipped`);
+        summary.push(`${emojis.rightArrow2} **Tickets** skipped`);
       }
     } else {
       await ticketsFeatureChoice.deferUpdate();
