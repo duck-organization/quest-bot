@@ -155,7 +155,10 @@ export class ButtonHandler extends InteractionHandler {
 
     await channel.send({
       content: `${staffMention}<@${interaction.user.id}>, your ticket has been created!\n**Reason:** ${reason}`,
-      components: [closeRow]
+      components: [closeRow],
+      allowedMentions: {
+        users: [interaction.user.id]
+      },
     });
   }
 }
