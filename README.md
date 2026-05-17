@@ -38,6 +38,12 @@ Feel free to open a pull request! Just make sure to follow the guidelines at [CO
 5. Run the development server with `pnpm dev`
 6. The bot will register commands automatically on startup.
 
+# Security
+
+Quest Bot undergoes frequent security audits that help it stay safe!
+
+If you ever find a security vulnerabitity, do not hesitate to make a report! We are more than happy to review it.
+
 # License
 
 This project is licensed under the Affero GNU General Public License v3.0 (AGPL-3.0). See LICENSE for more details.
