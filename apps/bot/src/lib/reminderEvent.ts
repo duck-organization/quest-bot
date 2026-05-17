@@ -25,6 +25,7 @@ export function reminderScheduler(client: Client) {
 						if (channel?.isSendable()) {
 							await channel.send({
 								content: `${emojis.rightArrow2} <@${reminder.userId}> reminder: ${reminder.message ?? 'No message provided'}`,
+								allowedMentions: { users: [reminder.userId] },
 							});
 							sent = true;
 						}
@@ -53,6 +54,7 @@ async function dmUser(client: Client, userId: string, message: string) {
 	await user
 		.send({
 			content: `${emojis.rightArrow2} <@${userId}> reminder: ${message}`,
+			allowedMentions: { users: [userId] },
 		})
 		.catch(() => {});
 }

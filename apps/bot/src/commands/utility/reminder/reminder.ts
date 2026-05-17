@@ -76,6 +76,7 @@ export class ReminderCommand extends Command {
 				const unix = Math.floor(remindAt.getTime() / 1000);
 				await interaction.reply({
 					content: `${emojis.rightArrow2} Reminder set to go off in <t:${unix}:R> message: ${message}\nID: \`${reminder.id}\``,
+					allowedMentions: { parse: [] },
 				});
 
 				setTimeout(() => {
