@@ -19,7 +19,7 @@ if (totalShards !== undefined) {
 
 const manager = new ShardingManager('./dist/index.js', {
 	token: process.env.DISCORD_TOKEN,
-	...(totalShards ? { totalShards } : {})
+	...(totalShards ? { totalShards } : {}),
 });
 
 manager.on('shardCreate', (shard) => {

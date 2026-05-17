@@ -2,19 +2,19 @@ import { Listener, type ChatInputCommandDeniedPayload, type UserError } from '@s
 import { MessageFlags } from 'discord.js';
 
 export class ChatInputCommandDeniedListener extends Listener {
-    public constructor(context: Listener.LoaderContext, options: Listener.Options) {
-        super(context, { ...options, event: 'chatInputCommandDenied' });
-    }
+	public constructor(context: Listener.LoaderContext, options: Listener.Options) {
+		super(context, { ...options, event: 'chatInputCommandDenied' });
+	}
 
-    public override async run(error: UserError, { interaction }: ChatInputCommandDeniedPayload) {
-        if (interaction.deferred || interaction.replied) {
-            await interaction.editReply({ content: error.message });
-            return;
-        }
+	public override async run(error: UserError, { interaction }: ChatInputCommandDeniedPayload) {
+		if (interaction.deferred || interaction.replied) {
+			await interaction.editReply({ content: error.message });
+			return;
+		}
 
-        await interaction.reply({
-            content: error.message,
-            flags: MessageFlags.Ephemeral,
-        });
-    }
+		await interaction.reply({
+			content: error.message,
+			flags: MessageFlags.Ephemeral,
+		});
+	}
 }

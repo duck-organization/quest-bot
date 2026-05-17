@@ -7,44 +7,47 @@ import { reminderScheduler } from '#lib/reminderEvent.js';
 import { purgeExpiredWarns } from '#lib/warns.js';
 
 export class ReadyListener extends Listener<typeof Events.ClientReady> {
-  public constructor(context: Listener.LoaderContext, options: Listener.Options) {
-    super(context, {
-      ...options,
-      once: true,
-      event: Events.ClientReady
-    });
-  }
+	public constructor(context: Listener.LoaderContext, options: Listener.Options) {
+		super(context, {
+			...options,
+			once: true,
+			event: Events.ClientReady,
+		});
+	}
 
-  public async run(client: Client<true>) {
-    console.log(`Ready! Logged in as ${client.user.tag}`);
+	public async run(client: Client<true>) {
+		console.log(`Ready! Logged in as ${client.user.tag}`);
 
-    client.user.setActivity({
-      name: `/setup! | Shard ${client.shard?.ids?.[0] ?? 0}`,
-      type: ActivityType.Custom
-    });
+		client.user.setActivity({
+			name: `/setup! | Shard ${client.shard?.ids?.[0] ?? 0}`,
+			type: ActivityType.Custom,
+		});
 
-    heartbeat(client);
-    reminderScheduler(client);
+		heartbeat(client);
+		reminderScheduler(client);
 
-    const enforceMutes = async () => {
-      const mutes = await getActiveMutes();
-      for (const mute of mutes) {
-        const guild = client.guilds.cache.get(mute.guildId);
-        if (guild) await enforceMute(guild, mute.userId).catch((err) => console.error(err));
-      }
-    };
+		const enforceMutes = async () => {
+			const mutes = await getActiveMutes();
+			for (const mute of mutes) {
+				const guild = client.guilds.cache.get(mute.guildId);
+				if (guild) await enforceMute(guild, mute.userId).catch((err) => console.error(err));
+			}
+		};
 
-    await enforceMutes().catch((err) => console.error(err));
-    purgeExpiredWarns().catch((err) => console.error(err));
-    purgeExpiredBans(client).catch((err) => console.error(err));
+		await enforceMutes().catch((err) => console.error(err));
+		purgeExpiredWarns().catch((err) => console.error(err));
+		purgeExpiredBans(client).catch((err) => console.error(err));
 
-    setInterval(() => {
-      purgeExpiredWarns().catch((err) => console.error(err));
-      purgeExpiredBans(client).catch((err) => console.error(err));
-    }, 60 * 1000); // 1 min
+		setInterval(() => {
+			purgeExpiredWarns().catch((err) => console.error(err));
+			purgeExpiredBans(client).catch((err) => console.error(err));
+		}, 60 * 1000); // 1 min
 
-    setInterval(() => {
-      enforceMutes().catch((err) => console.error(err));
-    }, 30 * 60 * 1000); // 30 min
-  }
+		setInterval(
+			() => {
+				enforceMutes().catch((err) => console.error(err));
+			},
+			30 * 60 * 1000,
+		); // 30 min
+	}
 }

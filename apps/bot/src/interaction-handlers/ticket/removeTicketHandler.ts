@@ -6,155 +6,159 @@ import { getTicketId, removeTicket } from '#lib/tickets.js';
 import { getSettings } from '#lib/settings.js';
 
 async function generateTranscript(channel: TextChannel, ticket: any): Promise<string> {
-  const messages = new Map();
-  let lastId: string | undefined;
+	const messages = new Map();
+	let lastId: string | undefined;
 
-  while (true) {
-    const fetched = await channel.messages.fetch({ limit: 100, before: lastId });
-    if (fetched.size === 0) break;
-    fetched.forEach(msg => messages.set(msg.id, msg));
-    lastId = fetched.last()?.id;
-  }
-  
-  const sortedMessages = Array.from(messages.values()).reverse();
-  
-  let transcript = `Ticket <${ticket.ticketNumber}>-<@${ticket.userId}> Transcript\n`;
-  transcript += `Created: ${ticket.createdAt.toLocaleString()}\n`;
-  transcript += `User: <@${ticket.userId}>\n`;
-  if (ticket.reason) {
-    transcript += `Reason: ${ticket.reason}\n`;
-  }
-  transcript += `${'='.repeat(50)}\n\n`;
-  
-  for (const message of sortedMessages) {
-    const timestamp = message.createdAt.toLocaleString();
-    const author = message.author.tag;
-    const content = message.content || '[No text content]';
-    
-    transcript += `[${timestamp}] ${author}: ${content}\n`;
-    
-    if (message.attachments.size > 0) {
-      transcript += `  Attachments: ${Array.from(message.attachments.values()).map((a: any) => a.url).join(', ')}\n`;
-    }
-  }
-  
-  return transcript;
+	while (true) {
+		const fetched = await channel.messages.fetch({ limit: 100, before: lastId });
+		if (fetched.size === 0) break;
+		fetched.forEach((msg) => messages.set(msg.id, msg));
+		lastId = fetched.last()?.id;
+	}
+
+	const sortedMessages = Array.from(messages.values()).reverse();
+
+	let transcript = `Ticket <${ticket.ticketNumber}>-<@${ticket.userId}> Transcript\n`;
+	transcript += `Created: ${ticket.createdAt.toLocaleString()}\n`;
+	transcript += `User: <@${ticket.userId}>\n`;
+	if (ticket.reason) {
+		transcript += `Reason: ${ticket.reason}\n`;
+	}
+	transcript += `${'='.repeat(50)}\n\n`;
+
+	for (const message of sortedMessages) {
+		const timestamp = message.createdAt.toLocaleString();
+		const author = message.author.tag;
+		const content = message.content || '[No text content]';
+
+		transcript += `[${timestamp}] ${author}: ${content}\n`;
+
+		if (message.attachments.size > 0) {
+			transcript += `  Attachments: ${Array.from(message.attachments.values())
+				.map((a: any) => a.url)
+				.join(', ')}\n`;
+		}
+	}
+
+	return transcript;
 }
 
 export class ButtonHandler extends InteractionHandler {
-  public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
-    super(ctx, {
-      ...options,
-      interactionHandlerType: InteractionHandlerTypes.Button
-    });
-  }
+	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
+		super(ctx, {
+			...options,
+			interactionHandlerType: InteractionHandlerTypes.Button,
+		});
+	}
 
-  public override parse(interaction: ButtonInteraction) {
-    if (
-      interaction.customId !== 'remove-ticket' &&
-      interaction.customId !== 'confirm-remove-ticket' &&
-      interaction.customId !== 'cancel-remove-ticket'
-    ) {
-      return this.none();
-    }
+	public override parse(interaction: ButtonInteraction) {
+		if (
+			interaction.customId !== 'remove-ticket' &&
+			interaction.customId !== 'confirm-remove-ticket' &&
+			interaction.customId !== 'cancel-remove-ticket'
+		) {
+			return this.none();
+		}
 
-    return this.some();
-  }
+		return this.some();
+	}
 
-  public async run(interaction: ButtonInteraction) {
-    if (!interaction.inGuild()) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} This button can only be used in a server.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+	public async run(interaction: ButtonInteraction) {
+		if (!interaction.inGuild()) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} This button can only be used in a server.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    if (!interaction.guild) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} Failed to remove ticket.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+		if (!interaction.guild) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Failed to remove ticket.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    if (interaction.customId === 'cancel-remove-ticket') {
-      await interaction.update({
-        content: `${emojis.rightArrow2} Ticket closure cancelled.`,
-        components: []
-      });
-      return;
-    }
+		if (interaction.customId === 'cancel-remove-ticket') {
+			await interaction.update({
+				content: `${emojis.rightArrow2} Ticket closure cancelled.`,
+				components: [],
+			});
+			return;
+		}
 
-    const channel = interaction.channel;
+		const channel = interaction.channel;
 
-    if (!channel || !('deletable' in channel) || !channel.deletable) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} I cannot delete this channel.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+		if (!channel || !('deletable' in channel) || !channel.deletable) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} I cannot delete this channel.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    if (interaction.customId === 'remove-ticket') {
-      const confirmButton = new ButtonBuilder()
-        .setCustomId('confirm-remove-ticket')
-        .setLabel('Confirm Close')
-        .setStyle(ButtonStyle.Danger);
+		if (interaction.customId === 'remove-ticket') {
+			const confirmButton = new ButtonBuilder()
+				.setCustomId('confirm-remove-ticket')
+				.setLabel('Confirm Close')
+				.setStyle(ButtonStyle.Danger);
 
-      const cancelButton = new ButtonBuilder()
-        .setCustomId('cancel-remove-ticket')
-        .setLabel('Cancel')
-        .setStyle(ButtonStyle.Secondary);
+			const cancelButton = new ButtonBuilder()
+				.setCustomId('cancel-remove-ticket')
+				.setLabel('Cancel')
+				.setStyle(ButtonStyle.Secondary);
 
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, cancelButton);
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmButton, cancelButton);
 
-      await interaction.reply({
-        content: `${emojis.rightArrow2} Are you sure you want to close this ticket?`,
-        components: [row],
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Are you sure you want to close this ticket?`,
+				components: [row],
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    await interaction.update({
-      content: `${emojis.rightArrow2} Closing ticket...`,
-      components: []
-    });
+		await interaction.update({
+			content: `${emojis.rightArrow2} Closing ticket...`,
+			components: [],
+		});
 
-    const ticket = await getTicketId(interaction.guild.id, channel.id);
+		const ticket = await getTicketId(interaction.guild.id, channel.id);
 
-    try { 
-      if (ticket && channel.isTextBased()) {
-        const settings = await getSettings(interaction.guild.id, interaction.guild.name);
-        
-        // Send transcript if configured
-        if (settings.ticketTranscriptChannelId) {
-          const transcriptChannel = await interaction.guild.channels.fetch(settings.ticketTranscriptChannelId).catch(() => null);
-          
-          if (transcriptChannel && transcriptChannel.type === ChannelType.GuildText) {
-            try {
-              const transcript = await generateTranscript(channel as TextChannel, ticket);
-              const attachment = new AttachmentBuilder(Buffer.from(transcript), {
-                name: `ticket-${ticket.ticketNumber}-transcript.txt`
-              });
-              
-              await (transcriptChannel as TextChannel).send({
-                content: `📋 **Ticket #${ticket.ticketNumber}** transcript - Closed by ${interaction.user.tag}`,
-                files: [attachment]
-              });
-            } catch (transcriptErr) {
-              console.error('Failed to send ticket transcript:', transcriptErr);
-            }
-          }
-        }
-        
-        await removeTicket(ticket.id);
-      }
+		try {
+			if (ticket && channel.isTextBased()) {
+				const settings = await getSettings(interaction.guild.id, interaction.guild.name);
 
-      await channel.delete(`Ticket closed by ${interaction.user.tag}.`);
-    } catch (err) {
-        console.log(err);
-    }
-  }
+				// Send transcript if configured
+				if (settings.ticketTranscriptChannelId) {
+					const transcriptChannel = await interaction.guild.channels
+						.fetch(settings.ticketTranscriptChannelId)
+						.catch(() => null);
+
+					if (transcriptChannel && transcriptChannel.type === ChannelType.GuildText) {
+						try {
+							const transcript = await generateTranscript(channel as TextChannel, ticket);
+							const attachment = new AttachmentBuilder(Buffer.from(transcript), {
+								name: `ticket-${ticket.ticketNumber}-transcript.txt`,
+							});
+
+							await (transcriptChannel as TextChannel).send({
+								content: `📋 **Ticket #${ticket.ticketNumber}** transcript - Closed by ${interaction.user.tag}`,
+								files: [attachment],
+							});
+						} catch (transcriptErr) {
+							console.error('Failed to send ticket transcript:', transcriptErr);
+						}
+					}
+				}
+
+				await removeTicket(ticket.id);
+			}
+
+			await channel.delete(`Ticket closed by ${interaction.user.tag}.`);
+		} catch (err) {
+			console.log(err);
+		}
+	}
 }

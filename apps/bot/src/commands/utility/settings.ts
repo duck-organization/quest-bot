@@ -1,17 +1,17 @@
 import { Command } from '@sapphire/framework';
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ChannelSelectMenuBuilder,
-  ChannelType,
-  type Guild,
-  InteractionContextType,
-  MessageFlags,
-  PermissionFlagsBits,
-  RoleSelectMenuBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelSelectMenuBuilder,
+	ChannelType,
+	type Guild,
+	InteractionContextType,
+	MessageFlags,
+	PermissionFlagsBits,
+	RoleSelectMenuBuilder,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
 } from 'discord.js';
 import { getSettings, type ServerSettings, updateSettings } from '#lib/settings.js';
 import { emojis } from '#utils/emoji.js';
@@ -19,379 +19,368 @@ import { emojis } from '#utils/emoji.js';
 const staleInteractionErrorCodes = new Set([10_015, 50_027, 10062]);
 
 function isStaleInteractionError(error: unknown): error is { code: number } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    typeof error.code === 'number' &&
-    staleInteractionErrorCodes.has(error.code)
-  );
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof error.code === 'number' &&
+		staleInteractionErrorCodes.has(error.code)
+	);
 }
 
 function buildWelcomePanel(settings: ServerSettings, guild: Guild, status?: string) {
-  const currentChannelName = settings.welcomeChannelId
-    ? guild.channels.cache.get(settings.welcomeChannelId)?.name
-    : null;
+	const currentChannelName = settings.welcomeChannelId
+		? guild.channels.cache.get(settings.welcomeChannelId)?.name
+		: null;
 
-  const toggleMenu = new StringSelectMenuBuilder()
-    .setCustomId('welcomeToggle')
-    .setPlaceholder(`${settings.welcomePeople ? 'Enabled' : 'Disabled'}`)
-    .addOptions(
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Enable')
-        .setDescription('Send a message when a user joins the server.')
-        .setValue('enable'),
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Disable')
-        .setDescription("Don't send a message when a user joins the server.")
-        .setValue('disable')
-    );
+	const toggleMenu = new StringSelectMenuBuilder()
+		.setCustomId('welcomeToggle')
+		.setPlaceholder(`${settings.welcomePeople ? 'Enabled' : 'Disabled'}`)
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel('Enable')
+				.setDescription('Send a message when a user joins the server.')
+				.setValue('enable'),
+			new StringSelectMenuOptionBuilder()
+				.setLabel('Disable')
+				.setDescription("Don't send a message when a user joins the server.")
+				.setValue('disable'),
+		);
 
-  const channelMenu = new ChannelSelectMenuBuilder()
-    .setCustomId('welcomeChannel')
-    .setPlaceholder(
-      currentChannelName ? `#${currentChannelName}` : 'Select a channel for welcome messages'
-    )
-    .setChannelTypes(ChannelType.GuildText);
+	const channelMenu = new ChannelSelectMenuBuilder()
+		.setCustomId('welcomeChannel')
+		.setPlaceholder(currentChannelName ? `#${currentChannelName}` : 'Select a channel for welcome messages')
+		.setChannelTypes(ChannelType.GuildText);
 
-  return {
-    content: status
-      ? `${emojis.rightArrow1} **Welcome** module:\n${emojis.rightArrow2} ${status}`
-      : `${emojis.rightArrow1} **Welcome** module:`,
-    components: [
-      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu)
-    ]
-  };
+	return {
+		content: status
+			? `${emojis.rightArrow1} **Welcome** module:\n${emojis.rightArrow2} ${status}`
+			: `${emojis.rightArrow1} **Welcome** module:`,
+		components: [
+			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
+			new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu),
+		],
+	};
 }
 
 function buildTicketPanel(settings: ServerSettings, guild: Guild, status?: string) {
-  const currentCategoryName = settings.ticketCategoryId
-    ? guild.channels.cache.get(settings.ticketCategoryId)?.name
-    : null;
+	const currentCategoryName = settings.ticketCategoryId
+		? guild.channels.cache.get(settings.ticketCategoryId)?.name
+		: null;
 
-  const categoryMenu = new ChannelSelectMenuBuilder()
-    .setCustomId('ticketCategory')
-    .setPlaceholder(currentCategoryName ?? 'Select a category for tickets')
-    .setChannelTypes(ChannelType.GuildCategory);
+	const categoryMenu = new ChannelSelectMenuBuilder()
+		.setCustomId('ticketCategory')
+		.setPlaceholder(currentCategoryName ?? 'Select a category for tickets')
+		.setChannelTypes(ChannelType.GuildCategory);
 
-  const removeButton = new ButtonBuilder()
-    .setCustomId('ticketCategoryRemove')
-    .setLabel('Remove Category')
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(!settings.ticketCategoryId);
-  
-  const currentStaffRole = settings.staffRole
-    ? guild.roles.cache.get(settings.staffRole)?.name
-    : null;
-  
-  const staffRole = new RoleSelectMenuBuilder()
-    .setCustomId('staffRole')
-    .setPlaceholder(currentStaffRole ?? 'Select a ticket staff role');
+	const removeButton = new ButtonBuilder()
+		.setCustomId('ticketCategoryRemove')
+		.setLabel('Remove Category')
+		.setStyle(ButtonStyle.Danger)
+		.setDisabled(!settings.ticketCategoryId);
 
-  const removeStaffRoleButton = new ButtonBuilder()
-    .setCustomId('removeStaffRole')
-    .setLabel('Remove Staff Role')
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(!settings.staffRole);
-  
-  const currentTranscriptChannelName = settings.ticketTranscriptChannelId
-    ? guild.channels.cache.get(settings.ticketTranscriptChannelId)?.name
-    : null;
-  
-  const ticketTranscriptChannel = new ChannelSelectMenuBuilder()
-    .setCustomId('ticketTranscriptChannel')
-    .setPlaceholder(currentTranscriptChannelName ? `#${currentTranscriptChannelName}` : 'Select a channel for ticket transcripts')
-    .setChannelTypes(ChannelType.GuildText);
-  
-  const removeTranscriptChannelButton = new ButtonBuilder()
-    .setCustomId('removeTranscriptChannel')
-    .setLabel('Remove Transcript Channel')
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(!settings.ticketTranscriptChannelId);
+	const currentStaffRole = settings.staffRole ? guild.roles.cache.get(settings.staffRole)?.name : null;
 
-  return {
-    content: status
-      ? `${emojis.rightArrow1} **Tickets** module:\n${emojis.rightArrow2} ${status}`
-      : `${emojis.rightArrow1} **Tickets** module:`,
-    components: [
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(categoryMenu),
-      new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(staffRole),
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(ticketTranscriptChannel),
-      new ActionRowBuilder<ButtonBuilder>().addComponents(removeButton, removeStaffRoleButton, removeTranscriptChannelButton)
-    ]
-  };
+	const staffRole = new RoleSelectMenuBuilder()
+		.setCustomId('staffRole')
+		.setPlaceholder(currentStaffRole ?? 'Select a ticket staff role');
+
+	const removeStaffRoleButton = new ButtonBuilder()
+		.setCustomId('removeStaffRole')
+		.setLabel('Remove Staff Role')
+		.setStyle(ButtonStyle.Danger)
+		.setDisabled(!settings.staffRole);
+
+	const currentTranscriptChannelName = settings.ticketTranscriptChannelId
+		? guild.channels.cache.get(settings.ticketTranscriptChannelId)?.name
+		: null;
+
+	const ticketTranscriptChannel = new ChannelSelectMenuBuilder()
+		.setCustomId('ticketTranscriptChannel')
+		.setPlaceholder(
+			currentTranscriptChannelName ? `#${currentTranscriptChannelName}` : 'Select a channel for ticket transcripts',
+		)
+		.setChannelTypes(ChannelType.GuildText);
+
+	const removeTranscriptChannelButton = new ButtonBuilder()
+		.setCustomId('removeTranscriptChannel')
+		.setLabel('Remove Transcript Channel')
+		.setStyle(ButtonStyle.Danger)
+		.setDisabled(!settings.ticketTranscriptChannelId);
+
+	return {
+		content: status
+			? `${emojis.rightArrow1} **Tickets** module:\n${emojis.rightArrow2} ${status}`
+			: `${emojis.rightArrow1} **Tickets** module:`,
+		components: [
+			new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(categoryMenu),
+			new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(staffRole),
+			new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(ticketTranscriptChannel),
+			new ActionRowBuilder<ButtonBuilder>().addComponents(
+				removeButton,
+				removeStaffRoleButton,
+				removeTranscriptChannelButton,
+			),
+		],
+	};
 }
 
 function buildLoggingPanel(settings: ServerSettings, guild: Guild, status?: string) {
-  const currentChannelName = settings.loggingChannelId
-    ? guild.channels.cache.get(settings.loggingChannelId)?.name
-    : null;
+	const currentChannelName = settings.loggingChannelId
+		? guild.channels.cache.get(settings.loggingChannelId)?.name
+		: null;
 
-  const toggleMenu = new StringSelectMenuBuilder()
-    .setCustomId('loggingToggle')
-    .setPlaceholder(`${settings.loggingEnabled ? 'Enabled' : 'Disabled'}`)
-    .addOptions(
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Enable')
-        .setDescription('Log all server events.')
-        .setValue('enable'),
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Disable')
-        .setDescription("Don't log any server events.")
-        .setValue('disable')
-    );
+	const toggleMenu = new StringSelectMenuBuilder()
+		.setCustomId('loggingToggle')
+		.setPlaceholder(`${settings.loggingEnabled ? 'Enabled' : 'Disabled'}`)
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel('Enable')
+				.setDescription('Log all server events.')
+				.setValue('enable'),
+			new StringSelectMenuOptionBuilder()
+				.setLabel('Disable')
+				.setDescription("Don't log any server events.")
+				.setValue('disable'),
+		);
 
-  const channelMenu = new ChannelSelectMenuBuilder()
-    .setCustomId('loggingChannel')
-    .setPlaceholder(
-      currentChannelName ? `#${currentChannelName}` : 'Select a channel for logging messages'
-    )
-    .setChannelTypes(ChannelType.GuildText);
+	const channelMenu = new ChannelSelectMenuBuilder()
+		.setCustomId('loggingChannel')
+		.setPlaceholder(currentChannelName ? `#${currentChannelName}` : 'Select a channel for logging messages')
+		.setChannelTypes(ChannelType.GuildText);
 
-  return {
-    content: status
-      ? `${emojis.rightArrow1} **Logging** module:\n${emojis.rightArrow2} ${status}`
-      : `${emojis.rightArrow1} **Logging** module:`,
-    components: [
-      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu)
-    ]
-  };
+	return {
+		content: status
+			? `${emojis.rightArrow1} **Logging** module:\n${emojis.rightArrow2} ${status}`
+			: `${emojis.rightArrow1} **Logging** module:`,
+		components: [
+			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
+			new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu),
+		],
+	};
 }
 
 function buildConfessionPanel(settings: ServerSettings, guild: Guild, status?: string) {
-  const currentChannelName = settings.confessionChannelId
-    ? guild.channels.cache.get(settings.confessionChannelId)?.name
-    : null;
+	const currentChannelName = settings.confessionChannelId
+		? guild.channels.cache.get(settings.confessionChannelId)?.name
+		: null;
 
-  const toggleMenu = new StringSelectMenuBuilder()
-    .setCustomId('confessionToggle')
-    .setPlaceholder(`${settings.confessionEnabled ? 'Enabled' : 'Disabled'}`)
-    .addOptions(
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Enable')
-        .setDescription('Enable confessions for this server.')
-        .setValue('enable'),
-      new StringSelectMenuOptionBuilder()
-        .setLabel('Disable')
-        .setDescription('Disable confessions for this server.')
-        .setValue('disable')
-    );
+	const toggleMenu = new StringSelectMenuBuilder()
+		.setCustomId('confessionToggle')
+		.setPlaceholder(`${settings.confessionEnabled ? 'Enabled' : 'Disabled'}`)
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+				.setLabel('Enable')
+				.setDescription('Enable confessions for this server.')
+				.setValue('enable'),
+			new StringSelectMenuOptionBuilder()
+				.setLabel('Disable')
+				.setDescription('Disable confessions for this server.')
+				.setValue('disable'),
+		);
 
-  const channelMenu = new ChannelSelectMenuBuilder()
-    .setCustomId('confessionChannel')
-    .setPlaceholder(currentChannelName ? `#${currentChannelName}` : 'Select a channel for confessions')
-    .setChannelTypes(ChannelType.GuildText);
+	const channelMenu = new ChannelSelectMenuBuilder()
+		.setCustomId('confessionChannel')
+		.setPlaceholder(currentChannelName ? `#${currentChannelName}` : 'Select a channel for confessions')
+		.setChannelTypes(ChannelType.GuildText);
 
-  return {
-    content: status
-      ? `${emojis.rightArrow1} **Confessions** module:
+	return {
+		content: status
+			? `${emojis.rightArrow1} **Confessions** module:
 ${emojis.rightArrow2} ${status}`
-      : `${emojis.rightArrow1} **Confessions** module:`,
-    components: [
-      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
-      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu)
-    ]
-  };
+			: `${emojis.rightArrow1} **Confessions** module:`,
+		components: [
+			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(toggleMenu),
+			new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channelMenu),
+		],
+	};
 }
 
 async function normalizeTicketSettings(guildId: string, guild: Guild, settings: ServerSettings) {
-  if (!settings.ticketCategoryId) return settings;
+	if (!settings.ticketCategoryId) return settings;
 
-  const ticketCategory =
-    guild.channels.cache.get(settings.ticketCategoryId) ??
-    (await guild.channels.fetch(settings.ticketCategoryId).catch(() => null));
+	const ticketCategory =
+		guild.channels.cache.get(settings.ticketCategoryId) ??
+		(await guild.channels.fetch(settings.ticketCategoryId).catch(() => null));
 
-  if (ticketCategory?.type === ChannelType.GuildCategory) return settings;
+	if (ticketCategory?.type === ChannelType.GuildCategory) return settings;
 
-  return updateSettings(guildId, guild.name, { ticketCategoryId: null });
+	return updateSettings(guildId, guild.name, { ticketCategoryId: null });
 }
 
 export class SettingsCommand extends Command {
-  public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options, preconditions: ['devMode'] });
-  }
+	public constructor(context: Command.LoaderContext, options: Command.Options) {
+		super(context, { ...options, preconditions: ['devMode'] });
+	}
 
-  public override registerApplicationCommands(registry: Command.Registry) {
-    registry.registerChatInputCommand((builder: any) =>
-      builder
-        .setName('settings')
-        .setDescription("Configure the bot's settings for this server.")
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-        .setContexts(InteractionContextType.Guild)
-    );
-  }
+	public override registerApplicationCommands(registry: Command.Registry) {
+		registry.registerChatInputCommand((builder: any) =>
+			builder
+				.setName('settings')
+				.setDescription("Configure the bot's settings for this server.")
+				.setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+				.setContexts(InteractionContextType.Guild),
+		);
+	}
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    const safeEditReply = async (
-      options: Parameters<Command.ChatInputCommandInteraction['editReply']>[0]
-    ) => {
-      try {
-        await interaction.editReply(options);
-      } catch (error) {
-        if (isStaleInteractionError(error)) return;
-        throw error;
-      }
-    };
+	public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+		const safeEditReply = async (options: Parameters<Command.ChatInputCommandInteraction['editReply']>[0]) => {
+			try {
+				await interaction.editReply(options);
+			} catch (error) {
+				if (isStaleInteractionError(error)) return;
+				throw error;
+			}
+		};
 
-    const settingMenu = new StringSelectMenuBuilder()
-      .setCustomId('settingOption')
-      .setPlaceholder('Select a setting to modify')
-      .addOptions(
-        new StringSelectMenuOptionBuilder()
-          .setLabel('Welcome Message')
-          .setDescription('Send a message when a user joins the server.')
-          .setValue('welcome'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('Tickets')
-          .setDescription('Configure where tickets are created.')
-          .setValue('tickets'),
-        new StringSelectMenuOptionBuilder()
-          .setLabel('Logging')
-          .setDescription('Configure server channel logging.')
-          .setValue('logging')
-          ,
-          new StringSelectMenuOptionBuilder()
-            .setLabel('Confessions')
-            .setDescription('Configure where confessions are posted and whether they are enabled.')
-            .setValue('confessions')
-      );
+		const settingMenu = new StringSelectMenuBuilder()
+			.setCustomId('settingOption')
+			.setPlaceholder('Select a setting to modify')
+			.addOptions(
+				new StringSelectMenuOptionBuilder()
+					.setLabel('Welcome Message')
+					.setDescription('Send a message when a user joins the server.')
+					.setValue('welcome'),
+				new StringSelectMenuOptionBuilder()
+					.setLabel('Tickets')
+					.setDescription('Configure where tickets are created.')
+					.setValue('tickets'),
+				new StringSelectMenuOptionBuilder()
+					.setLabel('Logging')
+					.setDescription('Configure server channel logging.')
+					.setValue('logging'),
+				new StringSelectMenuOptionBuilder()
+					.setLabel('Confessions')
+					.setDescription('Configure where confessions are posted and whether they are enabled.')
+					.setValue('confessions'),
+			);
 
-    const response = await interaction.reply({
-      components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(settingMenu)],
-      flags: MessageFlags.Ephemeral,
-      withResponse: true
-    });
+		const response = await interaction.reply({
+			components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(settingMenu)],
+			flags: MessageFlags.Ephemeral,
+			withResponse: true,
+		});
 
-    const collectorFilter = (i: { user: { id: string } }) => i.user.id === interaction.user.id;
+		const collectorFilter = (i: { user: { id: string } }) => i.user.id === interaction.user.id;
 
-    try {
-      const settingChoice = await import('#utils/collectors.js').then((m) =>
-        m.awaitMessageComponentSafe(response.resource!.message!, { filter: collectorFilter, time: 60_000 })
-      );
+		try {
+			const settingChoice = await import('#utils/collectors.js').then((m) =>
+				m.awaitMessageComponentSafe(response.resource!.message!, { filter: collectorFilter, time: 60_000 }),
+			);
 
-      if (!settingChoice) {
-        await safeEditReply({
-          content: `${emojis.rightArrow2} No response within a minute or errored.`,
-          components: []
-        });
-        return;
-      }
+			if (!settingChoice) {
+				await safeEditReply({
+					content: `${emojis.rightArrow2} No response within a minute or errored.`,
+					components: [],
+				});
+				return;
+			}
 
-      if (!settingChoice.isStringSelectMenu()) return;
+			if (!settingChoice.isStringSelectMenu()) return;
 
-      const guildId = interaction.guildId;
-      const guild = interaction.guild;
+			const guildId = interaction.guildId;
+			const guild = interaction.guild;
 
-      if (!guildId || !guild) {
-        await settingChoice.update({
-          content: `${emojis.rightArrow2} This command can only be used in a server.`,
-          components: []
-        });
-        return;
-      }
+			if (!guildId || !guild) {
+				await settingChoice.update({
+					content: `${emojis.rightArrow2} This command can only be used in a server.`,
+					components: [],
+				});
+				return;
+			}
 
-      const settings = await normalizeTicketSettings(
-        guildId,
-        guild,
-        await getSettings(guildId, guild.name)
-      );
+			const settings = await normalizeTicketSettings(guildId, guild, await getSettings(guildId, guild.name));
 
-      if (settingChoice.values[0] === 'welcome') {
-        await settingChoice.update(buildWelcomePanel(settings, guild));
-      } else if (settingChoice.values[0] === 'tickets') {
-        await settingChoice.update(buildTicketPanel(settings, guild));
-      } else if (settingChoice.values[0] === 'logging') {
-        await settingChoice.update(buildLoggingPanel(settings, guild));
-      } else if (settingChoice.values[0] === 'confessions') {
-        await settingChoice.update(buildConfessionPanel(settings, guild));
-      } else {
-        return;
-      }
+			if (settingChoice.values[0] === 'welcome') {
+				await settingChoice.update(buildWelcomePanel(settings, guild));
+			} else if (settingChoice.values[0] === 'tickets') {
+				await settingChoice.update(buildTicketPanel(settings, guild));
+			} else if (settingChoice.values[0] === 'logging') {
+				await settingChoice.update(buildLoggingPanel(settings, guild));
+			} else if (settingChoice.values[0] === 'confessions') {
+				await settingChoice.update(buildConfessionPanel(settings, guild));
+			} else {
+				return;
+			}
 
-      const collector = settingChoice.message.createMessageComponentCollector({
-        filter: collectorFilter,
-        time: 60_000
-      });
+			const collector = settingChoice.message.createMessageComponentCollector({
+				filter: collectorFilter,
+				time: 60_000,
+			});
 
-      collector.on('collect', async (i) => {
-        if (i.customId === 'welcomeToggle' && i.isStringSelectMenu()) {
-          const enable = i.values[0] === 'enable';
-          const next = await updateSettings(guildId, guild.name, { welcomePeople: enable });
+			collector.on('collect', async (i) => {
+				if (i.customId === 'welcomeToggle' && i.isStringSelectMenu()) {
+					const enable = i.values[0] === 'enable';
+					const next = await updateSettings(guildId, guild.name, { welcomePeople: enable });
 
-          await i.update(
-            buildWelcomePanel(next, guild, `Welcome module **${enable ? 'enabled' : 'disabled'}**.`)
-          );
-        } else if (i.customId === 'welcomeChannel' && i.isChannelSelectMenu()) {
-          const channelId = i.values[0];
-          const next = await updateSettings(guildId, guild.name, { welcomeChannelId: channelId });
+					await i.update(buildWelcomePanel(next, guild, `Welcome module **${enable ? 'enabled' : 'disabled'}**.`));
+				} else if (i.customId === 'welcomeChannel' && i.isChannelSelectMenu()) {
+					const channelId = i.values[0];
+					const next = await updateSettings(guildId, guild.name, { welcomeChannelId: channelId });
 
-          await i.update(buildWelcomePanel(next, guild, `Welcome channel set to <#${channelId}>.`));
-        } else if (i.customId === 'ticketCategory' && i.isChannelSelectMenu()) {
-          const categoryId = i.values[0];
-          const next = await updateSettings(guildId, guild.name, { ticketCategoryId: categoryId });
+					await i.update(buildWelcomePanel(next, guild, `Welcome channel set to <#${channelId}>.`));
+				} else if (i.customId === 'ticketCategory' && i.isChannelSelectMenu()) {
+					const categoryId = i.values[0];
+					const next = await updateSettings(guildId, guild.name, { ticketCategoryId: categoryId });
 
-          await i.update(buildTicketPanel(next, guild, `Ticket category set to <#${categoryId}>.`));
-        } else if (i.customId === 'ticketCategoryRemove' && i.isButton()) {
-          const next = await updateSettings(guildId, guild.name, { ticketCategoryId: null });
+					await i.update(buildTicketPanel(next, guild, `Ticket category set to <#${categoryId}>.`));
+				} else if (i.customId === 'ticketCategoryRemove' && i.isButton()) {
+					const next = await updateSettings(guildId, guild.name, { ticketCategoryId: null });
 
-          await i.update(buildTicketPanel(next, guild, 'Ticket category removed.'));
-        } else if (i.customId === 'staffRole' && i.isRoleSelectMenu()) {
-          const roleId = i.values[0];
-          const next = await updateSettings(guildId, guild.name, { staffRole: roleId });
+					await i.update(buildTicketPanel(next, guild, 'Ticket category removed.'));
+				} else if (i.customId === 'staffRole' && i.isRoleSelectMenu()) {
+					const roleId = i.values[0];
+					const next = await updateSettings(guildId, guild.name, { staffRole: roleId });
 
-          await i.update(buildTicketPanel(next, guild, `Ticket staff role set to <@&${roleId}>.`));
-        } else if (i.customId === 'removeStaffRole' && i.isButton()) {
-          const next = await updateSettings(guildId, guild.name, { staffRole: null });
+					await i.update(buildTicketPanel(next, guild, `Ticket staff role set to <@&${roleId}>.`));
+				} else if (i.customId === 'removeStaffRole' && i.isButton()) {
+					const next = await updateSettings(guildId, guild.name, { staffRole: null });
 
-          await i.update(buildTicketPanel(next, guild, 'Ticket staff role removed.'));
-        } else if (i.customId === 'ticketTranscriptChannel' && i.isChannelSelectMenu()) {
-          const channelId = i.values[0];
-          const next = await updateSettings(guildId, guild.name, { ticketTranscriptChannelId: channelId });
+					await i.update(buildTicketPanel(next, guild, 'Ticket staff role removed.'));
+				} else if (i.customId === 'ticketTranscriptChannel' && i.isChannelSelectMenu()) {
+					const channelId = i.values[0];
+					const next = await updateSettings(guildId, guild.name, { ticketTranscriptChannelId: channelId });
 
-          await i.update(buildTicketPanel(next, guild, `Ticket transcript channel set to <#${channelId}>.`));
-        } else if (i.customId === 'removeTranscriptChannel' && i.isButton()) {
-          const next = await updateSettings(guildId, guild.name, { ticketTranscriptChannelId: null });
+					await i.update(buildTicketPanel(next, guild, `Ticket transcript channel set to <#${channelId}>.`));
+				} else if (i.customId === 'removeTranscriptChannel' && i.isButton()) {
+					const next = await updateSettings(guildId, guild.name, { ticketTranscriptChannelId: null });
 
-          await i.update(buildTicketPanel(next, guild, 'Ticket transcript channel removed.'));
-        } else if (i.customId === 'loggingToggle' && i.isStringSelectMenu()) {
-          const enable = i.values[0] === 'enable';
-          const next = await updateSettings(guildId, guild.name, { loggingEnabled: enable });
+					await i.update(buildTicketPanel(next, guild, 'Ticket transcript channel removed.'));
+				} else if (i.customId === 'loggingToggle' && i.isStringSelectMenu()) {
+					const enable = i.values[0] === 'enable';
+					const next = await updateSettings(guildId, guild.name, { loggingEnabled: enable });
 
-          await i.update(
-            buildLoggingPanel(next, guild, `Logging module **${enable ? 'enabled' : 'disabled'}**.`)
-          );
-        } else if (i.customId === 'loggingChannel' && i.isChannelSelectMenu()) {
-          const channelId = i.values[0];
-          const next = await updateSettings(guildId, guild.name, { loggingChannelId: channelId });
+					await i.update(buildLoggingPanel(next, guild, `Logging module **${enable ? 'enabled' : 'disabled'}**.`));
+				} else if (i.customId === 'loggingChannel' && i.isChannelSelectMenu()) {
+					const channelId = i.values[0];
+					const next = await updateSettings(guildId, guild.name, { loggingChannelId: channelId });
 
-          await i.update(buildLoggingPanel(next, guild, `Logging channel set to <#${channelId}>.`));
-        } else if (i.customId === 'confessionToggle' && i.isStringSelectMenu()) {
-          const enable = i.values[0] === 'enable';
-          const next = await updateSettings(guildId, guild.name, { confessionEnabled: enable });
+					await i.update(buildLoggingPanel(next, guild, `Logging channel set to <#${channelId}>.`));
+				} else if (i.customId === 'confessionToggle' && i.isStringSelectMenu()) {
+					const enable = i.values[0] === 'enable';
+					const next = await updateSettings(guildId, guild.name, { confessionEnabled: enable });
 
-          await i.update(buildConfessionPanel(next, guild, `Confessions **${enable ? 'enabled' : 'disabled'}**.`));
-        } else if (i.customId === 'confessionChannel' && i.isChannelSelectMenu()) {
-          const channelId = i.values[0];
-          const next = await updateSettings(guildId, guild.name, { confessionChannelId: channelId });
+					await i.update(buildConfessionPanel(next, guild, `Confessions **${enable ? 'enabled' : 'disabled'}**.`));
+				} else if (i.customId === 'confessionChannel' && i.isChannelSelectMenu()) {
+					const channelId = i.values[0];
+					const next = await updateSettings(guildId, guild.name, { confessionChannelId: channelId });
 
-          await i.update(buildConfessionPanel(next, guild, `Confession channel set to <#${channelId}>.`));
-        }
-      });
+					await i.update(buildConfessionPanel(next, guild, `Confession channel set to <#${channelId}>.`));
+				}
+			});
 
-      collector.on('end', async () => {
-        await safeEditReply({
-          content: `${emojis.rightArrow2} Closed.`,
-          components: []
-        });
-      });
-    } catch (err) {
-      console.error(err);
-      await safeEditReply({
-        content: `${emojis.rightArrow2} No response within a minute or errored.`,
-        components: []
-      });
-    }
-  }
+			collector.on('end', async () => {
+				await safeEditReply({
+					content: `${emojis.rightArrow2} Closed.`,
+					components: [],
+				});
+			});
+		} catch (err) {
+			console.error(err);
+			await safeEditReply({
+				content: `${emojis.rightArrow2} No response within a minute or errored.`,
+				components: [],
+			});
+		}
+	}
 }

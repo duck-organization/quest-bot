@@ -2,19 +2,19 @@ import { Listener, type ContextMenuCommandDeniedPayload, type UserError } from '
 import { MessageFlags } from 'discord.js';
 
 export class ContextMenuCommandDeniedListener extends Listener {
-    public constructor(context: Listener.LoaderContext, options: Listener.Options) {
-        super(context, { ...options, event: 'contextMenuCommandDenied' });
-    }
+	public constructor(context: Listener.LoaderContext, options: Listener.Options) {
+		super(context, { ...options, event: 'contextMenuCommandDenied' });
+	}
 
-    public override async run(error: UserError, { interaction }: ContextMenuCommandDeniedPayload) {
-        if (interaction.deferred || interaction.replied) {
-            await interaction.editReply({ content: error.message });
-            return;
-        }
+	public override async run(error: UserError, { interaction }: ContextMenuCommandDeniedPayload) {
+		if (interaction.deferred || interaction.replied) {
+			await interaction.editReply({ content: error.message });
+			return;
+		}
 
-        await interaction.reply({
-            content: error.message,
-            flags: MessageFlags.Ephemeral,
-        });
-    }
+		await interaction.reply({
+			content: error.message,
+			flags: MessageFlags.Ephemeral,
+		});
+	}
 }

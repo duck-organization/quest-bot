@@ -3,33 +3,33 @@ import { AuditLogEvent, Colors, EmbedBuilder, Events, type GuildBan } from 'disc
 import { getRecentAuditLogEntry, logEmbed } from '#lib/logging.js';
 
 export class GuildBanAddListener extends Listener<typeof Events.GuildBanAdd> {
-  public constructor(context: Listener.LoaderContext, options: Listener.Options) {
-    super(context, {
-      ...options,
-      event: Events.GuildBanAdd
-    });
-  }
+	public constructor(context: Listener.LoaderContext, options: Listener.Options) {
+		super(context, {
+			...options,
+			event: Events.GuildBanAdd,
+		});
+	}
 
-  public async run(ban: GuildBan) {
-    const auditEntry = await getRecentAuditLogEntry(ban.guild, AuditLogEvent.MemberBanAdd, ban.user.id);
+	public async run(ban: GuildBan) {
+		const auditEntry = await getRecentAuditLogEntry(ban.guild, AuditLogEvent.MemberBanAdd, ban.user.id);
 
-    const embed = new EmbedBuilder()
-      .setTitle('Member Banned')
-      .setColor(Colors.DarkRed)
-      .addFields(
-        { name: 'Member', value: `${ban.user.tag} (${ban.user.id})`, inline: false },
-        { name: 'Username', value: ban.user.toString(), inline: true }
-      )
-      .setTimestamp();
+		const embed = new EmbedBuilder()
+			.setTitle('Member Banned')
+			.setColor(Colors.DarkRed)
+			.addFields(
+				{ name: 'Member', value: `${ban.user.tag} (${ban.user.id})`, inline: false },
+				{ name: 'Username', value: ban.user.toString(), inline: true },
+			)
+			.setTimestamp();
 
-    if (auditEntry?.executor) {
-      embed.addFields({ name: 'Moderator', value: `${auditEntry.executor.tag}`, inline: true });
-    }
+		if (auditEntry?.executor) {
+			embed.addFields({ name: 'Moderator', value: `${auditEntry.executor.tag}`, inline: true });
+		}
 
-    if (auditEntry?.reason) {
-      embed.addFields({ name: 'Reason', value: auditEntry.reason, inline: false });
-    }
+		if (auditEntry?.reason) {
+			embed.addFields({ name: 'Reason', value: auditEntry.reason, inline: false });
+		}
 
-    await logEmbed(ban.guild, embed);
-  }
+		await logEmbed(ban.guild, embed);
+	}
 }

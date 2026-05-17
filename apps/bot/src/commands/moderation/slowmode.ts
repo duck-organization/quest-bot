@@ -6,87 +6,87 @@ import { emojis } from '#utils/emoji.js';
 const MAX_SLOWMODE_SECONDS = 21_600;
 
 export class SlowmodeCommand extends Command {
-  public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options, preconditions: ['devMode'] });
-  }
+	public constructor(context: Command.LoaderContext, options: Command.Options) {
+		super(context, { ...options, preconditions: ['devMode'] });
+	}
 
-  public override registerApplicationCommands(registry: Command.Registry) {
-    registry.registerChatInputCommand((builder: any) =>
-      builder
-        .setName('slowmode')
-        .setDescription('Set or clear the slowmode for the current channel.')
-        .addStringOption((option: any) =>
-          option.setName('duration').setDescription('Provide a duration for slowmode, or leave blank to remove it')
-        )
-    );
-  }
+	public override registerApplicationCommands(registry: Command.Registry) {
+		registry.registerChatInputCommand((builder: any) =>
+			builder
+				.setName('slowmode')
+				.setDescription('Set or clear the slowmode for the current channel.')
+				.addStringOption((option: any) =>
+					option.setName('duration').setDescription('Provide a duration for slowmode, or leave blank to remove it'),
+				),
+		);
+	}
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    if (!interaction.inCachedGuild()) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} This command can only be used in a server.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+	public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+		if (!interaction.inCachedGuild()) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} This command can only be used in a server.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const member = interaction.member;
+		const member = interaction.member;
 
-    if (!member || !('permissions' in member) || !member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} You do not have permission to manage channels.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+		if (!member || !('permissions' in member) || !member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} You do not have permission to manage channels.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const channel = interaction.channel;
+		const channel = interaction.channel;
 
-    if (!channel || !('setRateLimitPerUser' in channel)) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} This channel does not support slowmode.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+		if (!channel || !('setRateLimitPerUser' in channel)) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} This channel does not support slowmode.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const durationStr = interaction.options.getString('duration') as StringValue;
-    const durationMs = durationStr ? ms(durationStr) : null;
+		const durationStr = interaction.options.getString('duration') as StringValue;
+		const durationMs = durationStr ? ms(durationStr) : null;
 
-    if (durationStr && (typeof durationMs !== 'number' || Number.isNaN(durationMs))) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} Invalid duration format.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+		if (durationStr && (typeof durationMs !== 'number' || Number.isNaN(durationMs))) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Invalid duration format.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const slowmodeSeconds = durationStr ? Math.floor((durationMs ?? 0) / 1000) : 0;
+		const slowmodeSeconds = durationStr ? Math.floor((durationMs ?? 0) / 1000) : 0;
 
-    if (slowmodeSeconds < 0 || slowmodeSeconds > MAX_SLOWMODE_SECONDS) {
-      await interaction.reply({
-        content: `${emojis.rightArrow2} Slowmode must be between 0 seconds and 6 hours.`,
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+		if (slowmodeSeconds < 0 || slowmodeSeconds > MAX_SLOWMODE_SECONDS) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Slowmode must be between 0 seconds and 6 hours.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    try {
-      await channel.setRateLimitPerUser(slowmodeSeconds);
+		try {
+			await channel.setRateLimitPerUser(slowmodeSeconds);
 
-      await interaction.reply({
-        content:
-          slowmodeSeconds === 0
-            ? `${emojis.rightArrow1} Slowmode cleared in <#${channel.id}>.`
-            : `${emojis.rightArrow1} Slowmode set to ${slowmodeSeconds} second${slowmodeSeconds === 1 ? '' : 's'} in <#${channel.id}>.`,
-        flags: MessageFlags.Ephemeral
-      });
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({
-        content: `${emojis.rightArrow2} Failed to update slowmode for this channel.`,
-        flags: MessageFlags.Ephemeral
-      });
-    }
-  }
+			await interaction.reply({
+				content:
+					slowmodeSeconds === 0
+						? `${emojis.rightArrow1} Slowmode cleared in <#${channel.id}>.`
+						: `${emojis.rightArrow1} Slowmode set to ${slowmodeSeconds} second${slowmodeSeconds === 1 ? '' : 's'} in <#${channel.id}>.`,
+				flags: MessageFlags.Ephemeral,
+			});
+		} catch (error) {
+			console.error(error);
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Failed to update slowmode for this channel.`,
+				flags: MessageFlags.Ephemeral,
+			});
+		}
+	}
 }

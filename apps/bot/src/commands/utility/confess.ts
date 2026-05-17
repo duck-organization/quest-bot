@@ -1,121 +1,141 @@
 import { Command } from '@sapphire/framework';
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  LabelBuilder,
-  MessageFlags,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  TextChannel
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	EmbedBuilder,
+	LabelBuilder,
+	MessageFlags,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	TextChannel,
 } from 'discord.js';
 import { getSettings } from '#lib/settings.js';
 import { storeConfessionContext, isConfessionBlacklisted } from '#lib/confessions.js';
 import { emojis } from '#utils/emoji.js';
 
 export class ConfessCommand extends Command {
-  public constructor(context: Command.LoaderContext, options: Command.Options) {
-    super(context, { ...options, preconditions: ['devMode'] });
-  }
+	public constructor(context: Command.LoaderContext, options: Command.Options) {
+		super(context, { ...options, preconditions: ['devMode'] });
+	}
 
-  public override registerApplicationCommands(_registry: Command.Registry) {
-    _registry.registerChatInputCommand((builder: any) =>
-      builder.setName('confess').setDescription('Create a confession')
-    );
-  }
+	public override registerApplicationCommands(_registry: Command.Registry) {
+		_registry.registerChatInputCommand((builder: any) =>
+			builder.setName('confess').setDescription('Create a confession'),
+		);
+	}
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    if (!interaction.inGuild() || !interaction.guild) {
-      await interaction.reply({ content: `${emojis.rightArrow2} This command can only be used in a server.`, flags: MessageFlags.Ephemeral });
-      return;
-    }
+	public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+		if (!interaction.inGuild() || !interaction.guild) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} This command can only be used in a server.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const settings = await getSettings(interaction.guild.id, interaction.guild.name);
+		const settings = await getSettings(interaction.guild.id, interaction.guild.name);
 
-    if (settings.confessionEnabled === false) {
-      await interaction.reply({ content: `${emojis.rightArrow2} Confessions are disabled in this server.`, flags: MessageFlags.Ephemeral });
-      return;
-    }
+		if (settings.confessionEnabled === false) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Confessions are disabled in this server.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    if (!settings.confessionChannelId) {
-      await interaction.reply({ content: `${emojis.rightArrow2} Confessions are not configured in this server.`, flags: MessageFlags.Ephemeral });
-      return;
-    }
+		if (!settings.confessionChannelId) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Confessions are not configured in this server.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const blacklistEntry = await isConfessionBlacklisted(interaction.user.id);
-    if (blacklistEntry) {
-      await interaction.reply({ content: `${emojis.rightArrow2} You are blacklisted from confessions${blacklistEntry.reason ? ` reason: ${blacklistEntry.reason}` : ''}.`, flags: MessageFlags.Ephemeral });
-      return;
-    }
+		const blacklistEntry = await isConfessionBlacklisted(interaction.user.id);
+		if (blacklistEntry) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} You are blacklisted from confessions${blacklistEntry.reason ? ` reason: ${blacklistEntry.reason}` : ''}.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-    const confessionInput = new TextInputBuilder()
-      .setCustomId('confession-text')
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(true)
-      .setMaxLength(1_000);
+		const confessionInput = new TextInputBuilder()
+			.setCustomId('confession-text')
+			.setStyle(TextInputStyle.Paragraph)
+			.setRequired(true)
+			.setMaxLength(1_000);
 
-    const confessionLabel = new LabelBuilder().setLabel('Confession').setTextInputComponent(confessionInput);
+		const confessionLabel = new LabelBuilder().setLabel('Confession').setTextInputComponent(confessionInput);
 
-    const modal = new ModalBuilder().setCustomId('create-confession-modal').setTitle('Create Confession').addLabelComponents(confessionLabel);
+		const modal = new ModalBuilder()
+			.setCustomId('create-confession-modal')
+			.setTitle('Create Confession')
+			.addLabelComponents(confessionLabel);
 
-    await interaction.showModal(modal);
+		await interaction.showModal(modal);
 
-    let modalSubmit;
+		let modalSubmit;
 
-    try {
-      modalSubmit = await interaction.awaitModalSubmit({
-        filter: (m: any) => m.customId === 'create-confession-modal' && m.user.id === interaction.user.id,
-        time: 60_000
-      });
-      await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
-    } catch {
-      return;
-    }
+		try {
+			modalSubmit = await interaction.awaitModalSubmit({
+				filter: (m: any) => m.customId === 'create-confession-modal' && m.user.id === interaction.user.id,
+				time: 60_000,
+			});
+			await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
+		} catch {
+			return;
+		}
 
-    const confession = modalSubmit.fields.getTextInputValue('confession-text');
+		const confession = modalSubmit.fields.getTextInputValue('confession-text');
 
-    const confessionChannel = await interaction.guild.channels.fetch(settings.confessionChannelId).catch(() => null);
+		const confessionChannel = await interaction.guild.channels.fetch(settings.confessionChannelId).catch(() => null);
 
-    if (!(confessionChannel instanceof TextChannel)) {
-      await modalSubmit.editReply({ content: `${emojis.rightArrow2} The configured confession channel is unavailable.` });
-      return;
-    }
+		if (!(confessionChannel instanceof TextChannel)) {
+			await modalSubmit.editReply({
+				content: `${emojis.rightArrow2} The configured confession channel is unavailable.`,
+			});
+			return;
+		}
 
-    const embed = new EmbedBuilder().setTitle('Confession').setDescription(confession).setTimestamp();
+		const embed = new EmbedBuilder().setTitle('Confession').setDescription(confession).setTimestamp();
 
-    const message = await confessionChannel.send({ embeds: [embed] });
+		const message = await confessionChannel.send({ embeds: [embed] });
 
-    let thread;
+		let thread;
 
-    try {
-      const threadName = confession.replace(/\s+/g, ' ').slice(0, 10).toLowerCase() || 'confession';
-      thread = await message.startThread({ name: `confession-${threadName}` });
-    } catch (error) {
-      await message.delete().catch(() => null);
-      throw error;
-    }
+		try {
+			const threadName = confession.replace(/\s+/g, ' ').slice(0, 10).toLowerCase() || 'confession';
+			thread = await message.startThread({ name: `confession-${threadName}` });
+		} catch (error) {
+			await message.delete().catch(() => null);
+			throw error;
+		}
 
-    const reportButton = new ButtonBuilder().setCustomId(`report-confession:${message.id}`).setLabel('Report').setStyle(ButtonStyle.Danger);
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton);
+		const reportButton = new ButtonBuilder()
+			.setCustomId(`report-confession:${message.id}`)
+			.setLabel('Report')
+			.setStyle(ButtonStyle.Danger);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton);
 
-    await message.edit({ components: [row] });
+		await message.edit({ components: [row] });
 
-    try {
-      await storeConfessionContext({
-        guildId: interaction.guild.id,
-        channelId: confessionChannel.id,
-        messageId: message.id,
-        threadId: thread.id,
-        creatorId: modalSubmit.user.id
-      });
-    } catch (error) {
-      await thread.delete().catch(() => null);
-      await message.delete().catch(() => null);
-      throw error;
-    }
+		try {
+			await storeConfessionContext({
+				guildId: interaction.guild.id,
+				channelId: confessionChannel.id,
+				messageId: message.id,
+				threadId: thread.id,
+				creatorId: modalSubmit.user.id,
+			});
+		} catch (error) {
+			await thread.delete().catch(() => null);
+			await message.delete().catch(() => null);
+			throw error;
+		}
 
-    await modalSubmit.editReply({ content: `${emojis.rightArrow2} Confession sent.` });
-  }
+		await modalSubmit.editReply({ content: `${emojis.rightArrow2} Confession sent.` });
+	}
 }
