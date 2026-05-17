@@ -1,16 +1,16 @@
 # Contributing to Quest Bot
 
-Contributing to Quest Bot requires basic knowledge of Typescript, Discord.JS and prisma.
+Contributing to Quest Bot requires basic knowledge of TypeScript, Discord.JS and prisma.
 
 ## AI Rules
 
-Please refrain from using AI to create new features. Using AI to help you *understand* how to make something is fine but you can't have it vibecode or make features for you. This is especially important for HackClub events. You can use AI to help *draft* a feature.
+Please refrain from using AI to create new features. Using AI to help you *understand* how to make something is fine but you can't have it write code or make features for you. This is especially important for HackClub events. You can use AI to help *draft* a feature.
 
-When commiting code you take *full* responsibility for what you are commiting.
+When committing code you take *full* responsibility for what you are committing.
 
 ## Pull requests
 
-Please submit pull requests to the `dev` branch, unless this is a feature which requires a seperate branch.
+Please submit pull requests to the `dev` branch, unless this is a feature which requires a separate branch.
 Make sure to test the code you have made before creating a pull request.
 Format for commit messages, fix|upd|chore|dockerfile: (change made).
 
