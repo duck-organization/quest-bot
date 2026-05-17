@@ -6,7 +6,7 @@ export function heartbeat(client: Client) {
     const pushURL = pushURLs[shardId];
 
     const push = async () => {
-        if (!client.isReady()) return;
+        if (!pushURL || !client.isReady()) return;
 
         try {
             const url = new URL(pushURL);

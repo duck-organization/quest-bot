@@ -222,11 +222,11 @@ export class SetupCommand extends Command {
         });
         summary.push(`${emojis.rightArrow2} **Welcome Messages** enabled in <#${welcomeChannelId}>`);
       } else {
-        summary.push(`${emojis.rightArrow1} **Welcome Messages** skipped`);
+        summary.push(`${emojis.rightArrow2} **Welcome Messages** skipped`);
       }
     } else {
       await welcomeFeatureChoice.deferUpdate();
-      summary.push(`${emojis.rightArrow1} **Welcome Messages** skipped`);
+      summary.push(`${emojis.rightArrow2} **Welcome Messages** skipped`);
     }
 
     // 2: tickets
@@ -604,11 +604,11 @@ export class SetupCommand extends Command {
         });
         summary.push(`${emojis.rightArrow2} **Confessions** enabled in <#${confessionChannelId}>`);
       } else {
-        summary.push(`${emojis.rightArrow1} **Confessions** skipped`);
+        summary.push(`${emojis.rightArrow2} **Confessions** skipped`);
       }
     } else {
       await confessionsFeatureChoice.deferUpdate();
-      summary.push(`${emojis.rightArrow1} **Confessions** skipped`);
+      summary.push(`${emojis.rightArrow2} **Confessions** skipped`);
     }
 
     await safeEditReply({
