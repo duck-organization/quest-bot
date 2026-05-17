@@ -218,7 +218,7 @@ export class SettingsCommand extends Command {
 			builder
 				.setName('settings')
 				.setDescription("Configure the bot's settings for this server.")
-				.setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setContexts(InteractionContextType.Guild),
 		);
 	}
