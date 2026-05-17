@@ -1,5 +1,5 @@
 import { Command } from '@sapphire/framework';
-import { MessageFlags } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { createAutoRole, getAutoRole, getAutoRoles, removeAutoRole } from '#lib/autorole.js';
 import { getQuestUnlimitedPurchaseComponents, LimitError } from '#lib/limits.js';
 import { emojis } from '#utils/emoji.js';
@@ -14,6 +14,7 @@ export class AutoRoleCommand extends Command {
       builder
         .setName('autorole')
         .setDescription('Automatically assign roles to new members!')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
         .addSubcommand((sub: any) =>
           sub
             .setName('add')
@@ -82,6 +83,22 @@ export class AutoRoleCommand extends Command {
       const role = interaction.options.getRole('role', true);
       const botRole = interaction.options.getBoolean('bot_role', true);
 
+      if (!interaction.member.permissions.has(PermissionFlagsBits.ManageRoles)) {
+        await interaction.reply({
+          content: `${emojis.rightArrow2} You do not have permission to configure auto roles.`,
+          flags: MessageFlags.Ephemeral
+        });
+        return;
+      }
+
+      if (interaction.member.roles.highest.position <= role.position) {
+        await interaction.reply({
+          content: `${emojis.rightArrow2} You can only configure auto roles for roles below your highest role.`,
+          flags: MessageFlags.Ephemeral
+        });
+        return;
+      }
+
       try {
         await createAutoRole(
           interaction.guildId,
@@ -125,7 +142,7 @@ export class AutoRoleCommand extends Command {
       const autoRoleId = interaction.options.getString('role', true);
       const autoRole = await getAutoRole(autoRoleId);
 
-      if (!autoRole) {
+      if (!autoRole || autoRole.guildId !== interaction.guildId) {
         await interaction.reply({
           content: `${emojis.rightArrow2} That auto role no longer exists.`,
           flags: MessageFlags.Ephemeral
