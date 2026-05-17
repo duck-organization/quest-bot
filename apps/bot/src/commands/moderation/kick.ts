@@ -88,6 +88,7 @@ export class KickCommand extends Command {
 
 		const response = await interaction.reply({
 			content: `${emojis.rightArrow1} Are you sure you want to kick <@${targetMember.user.id}> with reason: ${reason}?`,
+			allowedMentions: { parse: [], users: [targetMember.user.id] },
 			components: [row],
 			withResponse: true,
 		});
@@ -115,12 +116,14 @@ export class KickCommand extends Command {
 						.catch(() => {});
 					await confirmation.update({
 						content: `${emojis.rightArrow2} <@${targetMember.user.id}> has been kicked with reason: ${reason}\nYou must have had a real ick towards that person.`,
+						allowedMentions: { parse: [], users: [targetMember.user.id] },
 						components: [],
 					});
 				} catch (err) {
 					console.error(err);
 					await confirmation.update({
 						content: `${emojis.rightArrow2} Failed to kick <@${targetMember.user.id}> with reason: ${reason}\nYou must have had a real ick towards that person.`,
+						allowedMentions: { parse: [], users: [targetMember.user.id] },
 						components: [],
 					});
 				}

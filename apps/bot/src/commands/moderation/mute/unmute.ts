@@ -73,6 +73,7 @@ export class UnmuteCommand extends Command {
 
 		const response = await interaction.reply({
 			content: `${emojis.rightArrow1} Are you sure you want to unmute <@${targetMember.user.id}> with reason: ${reason}?`,
+			allowedMentions: { parse: [], users: [targetMember.user.id] },
 			components: [row],
 			withResponse: true,
 		});
@@ -100,12 +101,14 @@ export class UnmuteCommand extends Command {
 						.catch(() => {});
 					await confirmation.update({
 						content: `${emojis.rightArrow2} <@${targetMember.id}> has been unmuted. Reason: ${reason}`,
+						allowedMentions: { parse: [], users: [targetMember.user.id] },
 						components: [],
 					});
 				} catch (err) {
 					console.error(err);
 					await confirmation.update({
 						content: `${emojis.rightArrow2} Failed to unmute <@${targetMember.id}> with reason: ${reason}`,
+						allowedMentions: { parse: [], users: [targetMember.user.id] },
 						components: [],
 					});
 				}

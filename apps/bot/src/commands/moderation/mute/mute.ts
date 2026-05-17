@@ -102,6 +102,7 @@ export class MuteCommand extends Command {
 
 		const response = await interaction.reply({
 			content: `${emojis.rightArrow1} Are you sure you want to mute <@${targetMember.user.id}> with reason: ${reason}?`,
+			allowedMentions: { parse: [], users: [targetMember.user.id] },
 			components: [row],
 			withResponse: true,
 		});
@@ -137,6 +138,7 @@ export class MuteCommand extends Command {
 					content: `${emojis.rightArrow2} <@${targetMember.user.id}> has been muted with reason: ${reason}${
 						expiresAt ? `\nExpires: <t:${Math.floor(expiresAt.getTime() / 1000)}:R>` : ''
 					}`,
+					allowedMentions: { parse: [], users: [targetMember.user.id] },
 					components: [],
 				});
 			} else if (confirmation.customId === 'cancel') {
