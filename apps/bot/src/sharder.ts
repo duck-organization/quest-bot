@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import process from 'node:process';
 import { ShardingManager } from 'discord.js';
 
