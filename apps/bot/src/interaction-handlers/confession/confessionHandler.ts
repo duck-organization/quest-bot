@@ -7,7 +7,6 @@ import {
 	LabelBuilder,
 	MessageFlags,
 	ModalBuilder,
-	TextChannel,
 	TextInputBuilder,
 	TextInputStyle,
 	type ButtonInteraction,
@@ -17,9 +16,7 @@ import {
 	buildConfessionLink,
 	getConfessionContext,
 	removeConfessionContext,
-	storeConfessionContext,
 } from '#lib/confessions.js';
-import { getSettings } from '#lib/settings.js';
 import { emojis } from '#utils/emoji.js';
 
 interface ParsedConfessionButton {
@@ -88,7 +85,6 @@ export class ConfessionButtonHandler extends InteractionHandler {
 
 	public override parse(interaction: ButtonInteraction) {
 		if (
-			interaction.customId !== 'create-confession' &&
 			!interaction.customId.startsWith('report-confession:') &&
 			!interaction.customId.startsWith('delete-confession:')
 		) {
@@ -99,11 +95,6 @@ export class ConfessionButtonHandler extends InteractionHandler {
 	}
 
 	public async run(interaction: ButtonInteraction) {
-		if (interaction.customId === 'create-confession') {
-			await this.handleCreateConfession(interaction);
-			return;
-		}
-
 		const parsed = parseConfessionButton(interaction.customId);
 
 		if (parsed.action === 'report-confession') {
@@ -113,80 +104,6 @@ export class ConfessionButtonHandler extends InteractionHandler {
 
 		if (parsed.action === 'delete-confession') {
 			await this.handleDeleteConfession(interaction, parsed);
-		}
-	}
-
-	private async handleCreateConfession(interaction: ButtonInteraction) {
-		if (!interaction.inGuild() || !interaction.guild) {
-			await interaction.reply({
-				content: `${emojis.rightArrow2} This button can only be used in a server.`,
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-
-		const settings = await getSettings(interaction.guild.id, interaction.guild.name);
-
-		if (!settings.confessionChannelId) {
-			await interaction.reply({
-				content: `${emojis.rightArrow2} Confessions are not configured yet.`,
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-
-		const modal = createTextInputModal('create-confession-modal', 'Create Confession', 'confession-text', 'Confession');
-		await interaction.showModal(modal);
-
-		try {
-			const modalSubmit = await interaction.awaitModalSubmit({
-				filter: (modal) => modal.customId === 'create-confession-modal' && modal.user.id === interaction.user.id,
-				time: 60_000,
-			});
-			await modalSubmit.deferReply({ flags: MessageFlags.Ephemeral });
-
-			const confession = modalSubmit.fields.getTextInputValue('confession-text');
-			const confessionChannel = await interaction.guild.channels.fetch(settings.confessionChannelId).catch(() => null);
-
-			if (!(confessionChannel instanceof TextChannel)) {
-				await modalSubmit.editReply({
-					content: `${emojis.rightArrow2} The configured confession channel is unavailable.`,
-				});
-				return;
-			}
-
-			const embed = new EmbedBuilder().setTitle('Confession').setDescription(confession).setTimestamp();
-
-			const message = await confessionChannel.send({ embeds: [embed] });
-
-			try {
-				const threadName = confession.replace(/\s+/g, ' ').slice(0, 10).toLowerCase() || 'confession';
-				const thread = await message.startThread({ name: `confession-${threadName}` });
-
-				const reportButton = new ButtonBuilder()
-					.setCustomId(`report-confession:${message.id}`)
-					.setLabel('Report')
-					.setStyle(ButtonStyle.Danger);
-
-				await message.edit({ components: [new ActionRowBuilder<ButtonBuilder>().addComponents(reportButton)] });
-
-				await storeConfessionContext({
-					guildId: interaction.guild.id,
-					channelId: confessionChannel.id,
-					messageId: message.id,
-					threadId: thread.id,
-					creatorId: modalSubmit.user.id,
-				});
-
-				await modalSubmit.editReply({
-					content: `${emojis.rightArrow1} Confession sent.`,
-				});
-			} catch (error) {
-				await message.delete().catch(() => null);
-				throw error;
-			}
-		} catch {
-			return;
 		}
 	}
 
