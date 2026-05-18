@@ -35,8 +35,17 @@ export class PurgeCommand extends Command {
 		}
 
 		const member = interaction.member;
+		const channel = interaction.channel;
 
-		if (!member || !('permissions' in member) || !member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+		if (!channel || !('messages' in channel)) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} Unable to access channel messages.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
+
+		if (!member || !('permissions' in member) || !channel.permissionsFor(member)?.has(PermissionsBitField.Flags.ManageMessages)) {
 			await interaction.reply({
 				content: `${emojis.rightArrow2} You do not have permission to manage messages.`,
 				flags: MessageFlags.Ephemeral,
@@ -48,15 +57,6 @@ export class PurgeCommand extends Command {
 		if (amount <= 0) {
 			await interaction.reply({
 				content: `${emojis.rightArrow2} Please provide a valid number of messages to purge.`,
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-
-		const channel = interaction.channel;
-		if (!channel || !('messages' in channel)) {
-			await interaction.reply({
-				content: `${emojis.rightArrow2} Unable to access channel messages.`,
 				flags: MessageFlags.Ephemeral,
 			});
 			return;

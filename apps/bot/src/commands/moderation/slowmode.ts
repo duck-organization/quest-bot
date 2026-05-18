@@ -31,20 +31,19 @@ export class SlowmodeCommand extends Command {
 		}
 
 		const member = interaction.member;
-
-		if (!member || !('permissions' in member) || !member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
-			await interaction.reply({
-				content: `${emojis.rightArrow2} You do not have permission to manage channels.`,
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-
 		const channel = interaction.channel;
 
 		if (!channel || !('setRateLimitPerUser' in channel)) {
 			await interaction.reply({
 				content: `${emojis.rightArrow2} This channel does not support slowmode.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
+
+		if (!member || !('permissions' in member) || !channel.permissionsFor(member)?.has(PermissionsBitField.Flags.ManageChannels)) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} You do not have permission to manage channels.`,
 				flags: MessageFlags.Ephemeral,
 			});
 			return;
