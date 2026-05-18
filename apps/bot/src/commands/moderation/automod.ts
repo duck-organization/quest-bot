@@ -77,6 +77,15 @@ export class AutoModCommand extends Command {
 
 		if (subcommand === 'add') {
 			const word = interaction.options.getString('word', true).trim().toLowerCase();
+
+			if (!word) {
+				await interaction.reply({
+					content: `${emojis.rightArrow2} The word cannot be empty or contain only whitespace.`,
+					flags: MessageFlags.Ephemeral,
+				});
+				return;
+			}
+
 			try {
 				await createAutoMod(
 					interaction.guildId,

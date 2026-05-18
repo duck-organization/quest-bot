@@ -18,6 +18,7 @@ export class MessageCreateListener extends Listener<typeof Events.MessageCreate>
 		const content = message.content.toLowerCase();
 
 		for (const autoMod of autoMods) {
+			if (!autoMod.word.trim()) continue;
 			if (content.includes(autoMod.word.toLowerCase())) {
 				await message.delete().catch((err) => console.error(err));
 

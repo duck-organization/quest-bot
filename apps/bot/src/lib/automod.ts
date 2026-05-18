@@ -15,6 +15,10 @@ export async function createAutoMod(
 	word: string,
 	entitlements?: EntitlementManager,
 ) {
+	if (!word || !word.trim()) {
+		throw new Error('Automod word cannot be empty.');
+	}
+
 	const hasUnlimitedAccess = entitlements ? await hasQuestUnlimitedAccess(entitlements, guildId) : false;
 
 	if (LIMITS_ENABLED && !hasUnlimitedAccess) {
