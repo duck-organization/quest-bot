@@ -1,18 +1,37 @@
 {
 	"$schema": "https://json.schemastore.org/package.json",
-	"name": "@quest/bot",
-	"version": "0.1.0",
-	"private": true,
+	"name": "@duckorganization/questbot",
+	"version": "0.1.2",
+	"private": false,
 	"type": "module",
+	"description": "A Discord bot built with Sapphire framework",
+	"license": "AGPL-3.0-or-later",
+	"author": "Duck Organization",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/duck-organization/quest-bot.git"
+	},
+	"main": "./dist/index.js",
+	"bin": {
+		"questbot": "./dist/sharder.js"
+	},
+	"files": [
+		"dist",
+		"prisma/schema.prisma",
+		"README.md",
+		"LICENSE"
+	],
 	"scripts": {
 		"build": "rimraf dist && prisma generate && tsc",
 		"lint": "prettier --check .",
 		"format": "prettier --write .",
 		"predev": "pnpm build",
-		"start": "node --env-file-if-exists=../../.env dist/sharder.js",
-		"dev": "concurrently \"tsc --watch\" \"node --watch --env-file-if-exists=../../.env dist/index.js\"",
+		"start": "node --env-file-if-exists=.env dist/sharder.js",
+		"dev": "concurrently \"tsc --watch\" \"node --watch --env-file-if-exists=.env dist/index.js\"",
 		"db:push": "prisma db push",
-		"db:generate": "prisma generate"
+		"db:generate": "prisma generate",
+		"postinstall": "prisma generate",
+		"prepublishOnly": "pnpm build"
 	},
 	"dependencies": {
 		"@discordjs/core": "^2.4.0",
