@@ -69,6 +69,7 @@ export class UnwarnCommand extends Command {
 
 		const response = await interaction.reply({
 			content: `${emojis.rightArrow1} Are you sure you want to unwarn <@${warn.userId}> with reason: ${reason}?\n${emojis.rightArrow2} They were warned for: ${warn.reason} <t:${Math.floor(warn.createdAt.getTime() / 1000)}:R>`,
+			allowedMentions: { parse: [], users: [warn.userId] },
 			components: [row],
 			withResponse: true,
 		});
@@ -97,12 +98,14 @@ export class UnwarnCommand extends Command {
 						.catch(() => {});
 					await confirmation.update({
 						content: `${emojis.rightArrow2} \`${warn.id}\` has been removed from <@${warn.userId}>. Reason: ${reason}`,
+						allowedMentions: { parse: [], users: [warn.userId] },
 						components: [],
 					});
 				} catch (err) {
 					console.error(`Failed to remove warn ${warn.id}:`, err);
 					await confirmation.update({
 						content: `${emojis.rightArrow2} Failed to remove warn \`${warn.id}\` from <@${warn.userId}>.`,
+						allowedMentions: { parse: [], users: [warn.userId] },
 						components: [],
 					});
 				}

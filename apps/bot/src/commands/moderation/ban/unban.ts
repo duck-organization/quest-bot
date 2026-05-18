@@ -68,6 +68,7 @@ export class UnbanCommand extends Command {
 
 		const response = await interaction.reply({
 			content: `${emojis.rightArrow1} Are you sure you want to unban <@${targetMember.id}> for reason: ${reason}?`,
+			allowedMentions: { parse: [], users: [targetMember.id] },
 			components: [row],
 			withResponse: true,
 		});
@@ -95,12 +96,14 @@ export class UnbanCommand extends Command {
 						.catch(() => {});
 					await confirmation.update({
 						content: `${emojis.rightArrow2} <@${targetMember.id}> has been unbanned with reason: ${reason}`,
+						allowedMentions: { parse: [], users: [targetMember.id] },
 						components: [],
 					});
 				} catch (err) {
 					console.error(err);
 					await confirmation.update({
 						content: `${emojis.rightArrow2} Failed to unban <@${targetMember.id}> with reason: ${reason}`,
+						allowedMentions: { parse: [], users: [targetMember.id] },
 						components: [],
 					});
 				}
