@@ -144,7 +144,7 @@ export class AutoModCommand extends Command {
 			const autoModId = interaction.options.getString('word', true);
 			const autoMod = await getAutoMod(autoModId);
 
-			if (!autoMod) {
+			if (!autoMod || autoMod.guildId !== interaction.guildId) {
 				await interaction.reply({
 					content: `${emojis.rightArrow2} That blocked word doesn't exist.`,
 					flags: MessageFlags.Ephemeral,
