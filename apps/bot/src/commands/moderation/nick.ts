@@ -57,6 +57,14 @@ export class NickCommand extends Command {
 			return;
 		}
 
+		if (member.roles.highest.position <= targetMember.roles.highest.position) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} You cannot moderate someone with a higher or equal role.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
+
 		if (!targetMember.manageable) {
 			await interaction.reply({
 				content: `${emojis.rightArrow2} I cannot manage this member's nickname.`,

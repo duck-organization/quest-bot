@@ -86,6 +86,14 @@ export class MuteCommand extends Command {
 			return;
 		}
 
+		if (member.roles.highest.position <= targetMember.roles.highest.position) {
+			await interaction.reply({
+				content: `${emojis.rightArrow2} You cannot moderate someone with a higher or equal role.`,
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
+
 		if (!targetMember.moderatable) {
 			await interaction.reply({
 				content: `${emojis.rightArrow2} I cannot mute this user.`,
