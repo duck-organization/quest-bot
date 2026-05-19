@@ -1,6 +1,6 @@
 <div style="text-align: center;">
 
-  <img src=".github/assets/LargeDuckBannerWhite.png" alt="Duck Organization Banner" />
+  <img src=".github/assets/LargeDuckBanner.png" alt="Duck Organization Banner" />
 
 ---
 
