@@ -19,14 +19,27 @@ export class MessageUpdateListener extends Listener {
 
 		if (oldContent === newContent) return;
 
+		const oldImageUrls = [...(oldMsg?.attachments.values() ?? [])]
+			.filter((attachment) => attachment.contentType?.startsWith('image/'))
+			.map((attachment) => attachment.url);
+		const newImageUrls = [...newMsg.attachments.values()]
+			.filter((attachment) => attachment.contentType?.startsWith('image/'))
+			.map((attachment) => attachment.url);
+
+		const beforeParts = [oldMsg?.content, ...oldImageUrls].filter(Boolean) as string[];
+		const afterParts = [newMsg.content, ...newImageUrls].filter(Boolean) as string[];
+
+		const beforeValue = truncate(beforeParts.join('\n'), 1024) || '-';
+		const afterValue = truncate(afterParts.join('\n'), 1024) || '-';
+
 		const embed = new EmbedBuilder()
 			.setTitle('Message Edited')
 			.setColor(0xfac898)
 			.addFields(
 				{ name: 'Channel', value: newMsg.channel?.toString() ?? 'Unknown', inline: true },
 				{ name: 'Author', value: newMsg.author?.tag ?? oldMsg?.author?.tag ?? 'Unknown', inline: true },
-				{ name: 'Before', value: truncate(oldMsg?.content, 1023) || '-' },
-				{ name: 'After', value: truncate(newMsg.content, 1023) || '-' },
+				{ name: 'Before', value: beforeValue },
+				{ name: 'After', value: afterValue },
 			)
 			.setFooter({ text: `ID: ${newMsg.id}` })
 			.setTimestamp();

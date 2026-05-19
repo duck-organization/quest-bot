@@ -13,16 +13,20 @@ export class MessageDeleteListener extends Listener<typeof Events.MessageDelete>
 		if (!guild) return;
 		if (await isLoggingChannel(guild, message.channel?.id)) return;
 
+		const content = message instanceof Object ? (message as Message).content : undefined;
+		const imageUrls = [...message.attachments.values()]
+			.filter((attachment) => attachment.contentType?.startsWith('image/'))
+			.map((attachment) => attachment.url);
+		const contentParts = [content, ...imageUrls].filter(Boolean) as string[];
+		const contentValue = truncate(contentParts.join('\n'), 1024) || '-';
+
 		const embed = new EmbedBuilder()
 			.setTitle('Message Deleted')
 			.setColor(0xff6962)
 			.addFields(
 				{ name: 'Channel', value: message.channel?.toString() ?? 'Unknown', inline: true },
 				{ name: 'Author', value: message.author?.tag ?? 'Unknown', inline: true },
-				{
-					name: 'Content',
-					value: truncate(message instanceof Object ? (message as Message).content : undefined, 1024) || '-',
-				},
+				{ name: 'Content', value: contentValue },
 			)
 			.setFooter({ text: `ID: ${message.id}` })
 			.setTimestamp();
