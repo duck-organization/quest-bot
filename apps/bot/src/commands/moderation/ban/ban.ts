@@ -24,9 +24,9 @@ export class BanCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('Select a member to ban').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their ban'))
+				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their ban').setMaxLength(512))
 				.addStringOption((option: any) =>
-					option.setName('duration').setDescription('Provide a duration for their ban (if needed)'),
+					option.setName('duration').setDescription('Provide a duration for their ban (if needed)').setMaxLength(20),
 				),
 		);
 	}

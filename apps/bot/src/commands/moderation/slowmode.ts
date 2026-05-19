@@ -16,7 +16,7 @@ export class SlowmodeCommand extends Command {
 				.setName('slowmode')
 				.setDescription('Set or clear the slowmode for the current channel.')
 				.addStringOption((option: any) =>
-					option.setName('duration').setDescription('Provide a duration for slowmode, or leave blank to remove it'),
+					option.setName('duration').setDescription('Provide a duration for slowmode, or leave blank to remove it').setMaxLength(20),
 				),
 		);
 	}

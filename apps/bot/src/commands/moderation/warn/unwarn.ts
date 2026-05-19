@@ -21,10 +21,10 @@ export class UnwarnCommand extends Command {
 				.setName('unwarn')
 				.setDescription('Unwarn someone in the discord server.')
 				.addStringOption((option: any) =>
-					option.setName('id').setDescription('The ID of the warn to remove').setRequired(true),
+					option.setName('id').setDescription('The ID of the warn to remove').setRequired(true).setMaxLength(36),
 				)
 				.addStringOption((option: any) =>
-					option.setName('reason').setDescription('Provide a reason for removing the warn'),
+					option.setName('reason').setDescription('Provide a reason for removing the warn').setMaxLength(512),
 				),
 		);
 	}

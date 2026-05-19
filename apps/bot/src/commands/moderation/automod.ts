@@ -19,7 +19,7 @@ export class AutoModCommand extends Command {
 						.setName('add')
 						.setDescription('Create a new automod rule.')
 						.addStringOption((option: any) =>
-							option.setName('word').setDescription('The word to block').setRequired(true),
+							option.setName('word').setDescription('The word to block').setRequired(true).setMaxLength(100),
 						),
 				)
 				.addSubcommand((sub: any) =>
@@ -27,7 +27,7 @@ export class AutoModCommand extends Command {
 						.setName('remove')
 						.setDescription('Remove words from the automod list.')
 						.addStringOption((option: any) =>
-							option.setName('word').setDescription('The word to remove').setAutocomplete(true).setRequired(true),
+							option.setName('word').setDescription('The word to remove').setAutocomplete(true).setRequired(true).setMaxLength(36),
 						),
 				)
 				.addSubcommand((sub: any) => sub.setName('list').setDescription('List all blocked words.')),

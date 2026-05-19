@@ -22,7 +22,7 @@ export class KickCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('Select a member to kick').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their kick')),
+				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their kick').setMaxLength(512)),
 		);
 	}
 

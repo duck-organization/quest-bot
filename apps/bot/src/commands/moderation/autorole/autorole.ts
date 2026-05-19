@@ -34,7 +34,7 @@ export class AutoRoleCommand extends Command {
 						.setName('remove')
 						.setDescription('Remove an auto role.')
 						.addStringOption((option: any) =>
-							option.setName('role').setDescription('The auto role to remove').setAutocomplete(true).setRequired(true),
+							option.setName('role').setDescription('The auto role to remove').setAutocomplete(true).setRequired(true).setMaxLength(36),
 						),
 				)
 				.addSubcommand((sub: any) => sub.setName('list').setDescription('List all auto roles.')),

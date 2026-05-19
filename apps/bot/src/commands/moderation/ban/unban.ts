@@ -23,7 +23,7 @@ export class UnbanCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('The member to unban').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their unban')),
+				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their unban').setMaxLength(512)),
 		);
 	}
 

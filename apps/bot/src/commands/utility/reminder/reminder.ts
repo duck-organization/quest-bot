@@ -20,17 +20,17 @@ export class ReminderCommand extends Command {
 						.setName('add')
 						.setDescription('Set a new reminder.')
 						.addStringOption((option: any) =>
-							option.setName('duration').setDescription('When to remind you').setRequired(true),
+							option.setName('duration').setDescription('When to remind you').setRequired(true).setMaxLength(20),
 						)
 						.addStringOption((option: any) =>
-							option.setName('message').setDescription('What to remind you about').setRequired(true),
+							option.setName('message').setDescription('What to remind you about').setRequired(true).setMaxLength(1000),
 						),
 				)
 				.addSubcommand((sub: any) =>
 					sub
 						.setName('remove')
 						.setDescription('Cancel a reminder.')
-						.addStringOption((option: any) => option.setName('id').setDescription('The reminder ID').setRequired(true)),
+						.addStringOption((option: any) => option.setName('id').setDescription('The reminder ID').setRequired(true).setMaxLength(36)),
 				),
 		);
 	}
@@ -41,14 +41,6 @@ export class ReminderCommand extends Command {
 		if (subcommand === 'add') {
 			const durationStr = interaction.options.getString('duration', true);
 			const message = interaction.options.getString('message', true);
-
-			if (message.length > 1000) {
-				await interaction.reply({
-					content: `${emojis.rightArrow2} Reminder message cannot exceed 1K characters.`,
-					flags: MessageFlags.Ephemeral,
-				});
-				return;
-			}
 
 			const duration = ms(durationStr as StringValue);
 			if (typeof duration !== 'number' || isNaN(duration) || duration <= 0) {

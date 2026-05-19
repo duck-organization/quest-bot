@@ -27,8 +27,8 @@ export class WarnCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('Select a member to warn').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their warn'))
-				.addStringOption((option: any) => option.setName('duration').setDescription('Specify a duration for the warn')),
+				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their warn').setMaxLength(512))
+				.addStringOption((option: any) => option.setName('duration').setDescription('Specify a duration for the warn').setMaxLength(20)),
 		);
 	}
 

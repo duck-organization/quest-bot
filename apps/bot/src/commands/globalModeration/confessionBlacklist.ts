@@ -20,7 +20,7 @@ export class ConfessionBlacklistCommand extends Command {
 						.setName('add')
 						.setDescription('Blacklist a user from making confessions')
 						.addUserOption((opt: any) => opt.setName('user').setDescription('User to blacklist').setRequired(true))
-						.addStringOption((opt: any) => opt.setName('reason').setDescription('Reason').setRequired(false)),
+						.addStringOption((opt: any) => opt.setName('reason').setDescription('Reason').setMaxLength(512).setRequired(false)),
 				)
 				.addSubcommand((sub: any) =>
 					sub

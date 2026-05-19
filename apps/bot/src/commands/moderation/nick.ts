@@ -15,7 +15,7 @@ export class NickCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('Select a member to change their nickname').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('nickname').setDescription('Nickname (leave empty to reset)')),
+				.addStringOption((option: any) => option.setName('nickname').setDescription('Nickname (leave empty to reset)').setMaxLength(32)),
 		);
 	}
 

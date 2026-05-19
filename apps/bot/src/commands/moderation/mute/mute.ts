@@ -24,8 +24,8 @@ export class MuteCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('Select a member to mute').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('duration').setDescription('Specify a duration for the mute'))
-				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their mute')),
+				.addStringOption((option: any) => option.setName('duration').setDescription('Specify a duration for the mute').setMaxLength(20))
+				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their mute').setMaxLength(512)),
 		);
 	}
 

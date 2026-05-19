@@ -23,7 +23,7 @@ export class UnmuteCommand extends Command {
 				.addUserOption((option: any) =>
 					option.setName('member').setDescription('Select a member to unmute').setRequired(true),
 				)
-				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their unmute')),
+				.addStringOption((option: any) => option.setName('reason').setDescription('Provide a reason for their unmute').setMaxLength(512)),
 		);
 	}
 
