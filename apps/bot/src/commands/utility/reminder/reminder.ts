@@ -42,6 +42,14 @@ export class ReminderCommand extends Command {
 			const durationStr = interaction.options.getString('duration', true);
 			const message = interaction.options.getString('message', true);
 
+			if (message.length > 1000) {
+				await interaction.reply({
+					content: `${emojis.rightArrow2} Reminder message cannot exceed 1K characters.`,
+					flags: MessageFlags.Ephemeral,
+				});
+				return;
+			}
+
 			const duration = ms(durationStr as StringValue);
 			if (typeof duration !== 'number' || isNaN(duration) || duration <= 0) {
 				await interaction.reply({
