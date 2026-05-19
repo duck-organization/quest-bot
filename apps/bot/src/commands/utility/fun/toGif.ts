@@ -35,7 +35,7 @@ export class ToGifCommand extends Command {
 		const url = interaction.options.getString('url', true);
 
 		if (!isSafeUrl(url)) {
-			await interaction.reply({ content: `${emojis.rightArrow1} Only HTTPS is supported.`, flags: MessageFlags.Ephemeral });
+			await interaction.reply({ content: `${emojis.rightArrow1} URL not valid, HTTPS required.`, flags: MessageFlags.Ephemeral });
 			return;
 		}
 
