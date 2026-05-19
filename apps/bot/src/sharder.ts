@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import 'dotenv/config';
 import { ShardingManager } from 'discord.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
